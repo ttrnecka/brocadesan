@@ -1,0 +1,21 @@
+:switch_name:     IDAA1C01
+:switch_type:     "62.3"
+:switch_state:    Online
+:switch_mode:     Native
+:switch_role:     Principal
+:switch_domain:   "1"
+:switch_id:       fffc01
+:switch_wwn:      10:00:00:05:1e:4c:24:00
+:zoning_enabled:		 true
+:active_config:   AIS_IDA_SANA
+:switch_beacon:   "OFF"
+:fc_router:       "OFF"
+:allow_xisl_use: "OFF"
+:ls_attributes:  
+ :fid: "128"
+ :base_switch: "no"
+ :default_switch: "yes"
+ :address_mode: "0"
+
+
+:parsing_position: end
