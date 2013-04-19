@@ -12,6 +12,13 @@ class SanSwitchTest < MiniTest::Unit::TestCase
     @device = SanSwitch.new("test","test","test")
   end
   
+  def test_query
+    response=@device.query("test")
+    assert_instance_of SanSwitch::Response, response
+    assert_equal SanSwitch::QUERY_PROMPT+"test\n"+Net::SSH::DATA, response.data
+    assert_equal Net::SSH::ERROR, response.errors
+  end
+  
   def test_device_setup
     assert_instance_of SanSwitch, @device
   end
@@ -37,7 +44,6 @@ class SanSwitchTest < MiniTest::Unit::TestCase
   end
   
   def test_refresh
-    
     #returns true and runs query if not loaded or forced, runs query
     @device.instance_variable_set(:@configuration,{:name=>"test", :parsing_position=>"test"})
     @device.send(:refresh, "switchshow")

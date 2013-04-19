@@ -1,8 +1,15 @@
 require 'net/ssh'
 
+# Basic wrapper class that runs SSH queries on the device and returns Response
+#
+# It is used to extend further classes with SSH query mechanism
+ 
 class BrocadeSanDevice
+  
+  # default query prompt that will preceed each command started you +query+ in the Response +data+
   QUERY_PROMPT="> "
   
+  # Initialization method, +opts+ not used yet 
   def initialize(address,user,password,opts={})
       @address=address
       @user=user
@@ -11,6 +18,20 @@ class BrocadeSanDevice
       @session=nil
   end
   
+  # Queries +cmd+ command directly. 
+  # This method is to be used to extend this API 
+  # or 
+  # to do more difficult queries that have to be parsed separately
+  #
+  # Query command will open connection to device if called outside session block
+  # or use existing if called within session block.
+  #
+  # Example:
+  #   >> device.query("switchname")
+  #   => #<BrocadeSanDevice::Response:0x2bb1e00 @errors="", @data="sanswitchA", @parsed={:parsing_position=>"end"}>
+  #
+  # 
+  # Returns instance of Response or raises error if the connectionm cannot be opened
   def query(cmd)
     output=nil
     if @session
@@ -24,6 +45,19 @@ class BrocadeSanDevice
     return output
   end
   
+  # Opens a session
+  # 
+  # All queries within the session use the same connection. This speeds up the query processing.
+  # 
+  # The connection is closed at the end of the block
+  #
+  # Example:
+  #   device.session do 
+  #     device.query("switchname")
+  #     device.version
+  #   end
+  # 
+  # 
   def session
     @session=Net::SSH.start @address, @user, :password=>@password
     yield
@@ -35,12 +69,14 @@ class BrocadeSanDevice
   private
   
   def exec(ssh_session,cmd)
-    output=BrocadeSanDevice::Response.new
+    # this approach is used to use Response of the calling class
+    output=self.class::Response.new
+    output.data=QUERY_PROMPT+cmd+"\n"
     ssh_session.exec cmd do |ch, stream, data|
       if stream == :stderr
-        output.errors=data
+        output.errors+=data
       else
-        output.data=QUERY_PROMPT+cmd+"\n"+data
+        output.data+=data
       end
     end
     
@@ -48,10 +84,20 @@ class BrocadeSanDevice
   end
 end
 
+
 class BrocadeSanDevice
+  # This class defines the device response and it should not be manipulated directly
+  # Only exception is direct usage of query method which returns instance of this class
+
   class Response
-    attr_accessor :data, :errors, :parsed
+    # contains output of the command
+    attr_accessor :data
+    # contains errors raised by SSH exec
+    attr_accessor :errors
+    # contains parsed information after the parse method ran
+    attr_accessor :parsed
   
+    #initialization method
     def initialize
       @errors=""
       @data=""
@@ -60,12 +106,19 @@ class BrocadeSanDevice
       }
     end
     
+    # Resets all parsed data
+    #
+    # Use only if you plan to use query command directly and want to clear the previous data
+    # If you use 2nd query without reset if will only merge the new parsed data with the existing
     def reset
       @parsed = {
        :parsing_position=>nil
       }
     end
     
+    # Parse the current data and stores result to +parsed+.
+    #
+    # Any class that extends this class should override the private parse_line method and store results into +parsed+ hash
     def parse
       reset if !@parsed.kind_of? Hash
       
@@ -82,5 +135,6 @@ class BrocadeSanDevice
     end
   end
   
+  # Class using for raising specific errors
   class Error < Exception; end
 end

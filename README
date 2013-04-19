@@ -1,0 +1,66 @@
+= BrocadeSAN
+
+== What is BrocadeSAN?
+
+BrocadeSAN provides a simple API to communicate with Brocade SAN switches using CLI SSH connection.
+You have option to either run the command manualy or query the switch with pre-defined set of methods.
+
+== Basic Usage
+
+You can use BrocadeSAN in 2 different ways:
+
+=== 1. Query the SAN switch directly using 1 connection per command query 
+
+  # this will query the switch name and version and open connection to switch twice
+  
+  switch=SanSwitch.new("address","user","password")
+  
+  switch.name
+  switch.version
+  
+=== 2. Query the SAN switch in session block using 1 connection per session
+  
+  # this will query the switch name and version and open connection to switch only once
+  
+  switch=SanSwitch.new("address","user","password")
+  
+  switch.session do 
+	switch.name
+	switch.version
+  end
+  
+
+== Download and Installation
+
+Installation *with* RubyGems:
+  $ su
+  # gem install brocadesan
+    
+== Author
+
+Written 2013 by Tomas Trnecka <mailto:trnecka@gmail.com>.
+
+== License
+
+Copyright (c) 2013 Tomas Trnecka
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.

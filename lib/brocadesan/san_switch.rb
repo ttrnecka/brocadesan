@@ -1,8 +1,30 @@
 require 'net/ssh'
 require 'yaml'
 
+# Class to model SAN switch from Brocade
 class SanSwitch < BrocadeSanDevice
+  # Maps each method name to command to be run to obtain it and to hash key where it ill be stored
+  # 
+  # See lib/config/san_switch_cmd_mapping.yml for details
+  #
+  # Example:
+  #  :name:
+  #   :cmd: switchshow
+  #   :attr: switch_name
+  #
+  # This will cause that class will have method called name(forced=true).
+  # When the method is called first time or +forced+ is true the +switchshow+ command
+  # will be queried on the switch.
+  # Subsequently you need to edit the Response parser to parse the value and store it into
+  # Response +parsed+ hash under +:switch_name+ key.
+  # At the end the +:switch_name+ key is returned from +configuration+ attribute
+
+  CMD_MAPPING=YAML.load(File.read(File.join("lib","config","#{self.name.underscore}_cmd_mapping.yml")))
   
+  # Maps each command to the parser method to use
+  PARSER_MAPPING=YAML.load(File.read(File.join("lib","config","parser_mapping.yml")))
+  
+  # Used to dynamically create named methods based on CMD_MAPPING
   def self.attributes(args)
     args.each do |arg|
      define_method arg do |forced=false|
@@ -11,12 +33,34 @@ class SanSwitch < BrocadeSanDevice
     end
   end
   
-  CMD_MAPPING=YAML.load(File.read(File.join("lib","config","switch_cmd_mapping.yml")))
-  PARSER_MAPPING=YAML.load(File.read(File.join("lib","config","parser_mapping.yml")))
+  # Hash containing parsed attributes
+  #
+  # Can be used to obtain parsed attributes for which there is no named method.
+  # These attributes however has to be obtained as colateral of running another public method.
+  #
+  # Example:
+  #
+  #  # this will call fosconfig --show (see CMD_MAPPING)
+  #  # and load :fc_routing_service, :i_scsi_service and others into configuration as well
+  #  # the command however returns only whether the virtual_fabric is enabled/disabled
+  #
+  #  switch.configuration
+  #  => nil
+  #  switch.vf
+  #  => "enabled"
+  #  switch.configuration
+  #  => {:parsing_position=>"end", :fc_routing_service=>"disabled", :i_scsi_service=>"Service not supported on this Platform", :i_sns_client_service=>"Serv
+  #  ice not supported on this Platform", :virtual_fabric=>"enabled", :ethernet_switch_service=>"disabled"}
   
   attr_reader :configuration 
+  
   attributes CMD_MAPPING.keys
   
+  # gets the +attr+
+  #
+  # +attr+ has to be speficied in the CMD_MAPPING
+  #
+  # named methods are wrappers around this method so you should not use this directly
   def get(attr,forced=false)
     raise SanSwitch::Error.new('Unknown attribute') if CMD_MAPPING[attr.to_sym].nil?
     
@@ -32,7 +76,7 @@ class SanSwitch < BrocadeSanDevice
   def refresh(cmd) 
     response=query(cmd)
     response.parse
-    
+
     @configuration||={}
     @configuration.merge!(response.parsed)
     
@@ -48,21 +92,20 @@ class SanSwitch < BrocadeSanDevice
 end
 
 class SanSwitch
+  # classs extending BrocadeSanDevice::Response
   class Response < self::Response
     private 
     
     def parse_line(line)
       return if line.empty?
-      
       # we detect which command output we parse - commands start with > on the XML line
       @parsed[:parsing_position] = case 
         when line.match(/^#{SanSwitch::QUERY_PROMPT}/) then line.split(" ")[1]
         else @parsed[:parsing_position]
       end
-      
       #do not process if we are on query line
       return if line.match(/^#{SanSwitch::QUERY_PROMPT}/)
-      
+
       # we parse only certain commands
       case 
         when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='simple' ? k : nil }.compact.join("|")}/i)
@@ -100,8 +143,10 @@ class SanSwitch
         when line.match(/^Index|^=/)
           ""
         else
-          arr = line.split(":")
-          @parsed[arr[0].gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym]=arr[1..-1].join(":").strip
+          if line.match(/:/)
+            arr = line.split(":")
+            @parsed[arr[0].gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym]=arr[1..-1].join(":").strip
+          end
         end  
     end
   end
