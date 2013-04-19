@@ -1,0 +1,6 @@
+> version
+Kernel:     2.6.14.2
+Fabric OS:  v6.4.3b
+Made on:    Tue Sep 4 22:03:15 2012
+Flash:      Fri Oct 12 14:05:20 2012
+BootProm:   1.0.15

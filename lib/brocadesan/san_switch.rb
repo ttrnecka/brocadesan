@@ -3,14 +3,31 @@ require 'yaml'
 
 class SanSwitch < BrocadeSanDevice
   
-  attr_reader :configuration
-  CMD_MAPPING=YAML.load(File.read(File.join("lib","config","switch_cmd_mapping.yml")))
-  
-  def name(forced=false)
-    cmd=CMD_MAPPING[:name][:cmd]
-    refresh(cmd) if !@loaded || !@loaded[key(cmd)] || forced
-    @configuration[CMD_MAPPING[:name][:attr].to_sym]  
+  def self.attributes(args)
+    args.each do |arg|
+     define_method arg do |forced=false|
+       self.get(arg,forced)
+     end
+    end
   end
+  
+  CMD_MAPPING=YAML.load(File.read(File.join("lib","config","switch_cmd_mapping.yml")))
+  PARSER_MAPPING=YAML.load(File.read(File.join("lib","config","parser_mapping.yml")))
+  
+  attr_reader :configuration 
+  attributes CMD_MAPPING.keys
+  
+  def get(attr,forced=false)
+    raise SanSwitch::Error.new('Unknown attribute') if CMD_MAPPING[attr.to_sym].nil?
+    
+    cmd=CMD_MAPPING[attr.to_sym][:cmd]
+    
+    refresh(cmd) if !@loaded || !@loaded[key(cmd)] || forced
+    
+    @configuration[CMD_MAPPING[attr.to_sym][:attr].to_sym]
+  end
+  
+  private
   
   def refresh(cmd) 
     response=query(cmd)
@@ -25,8 +42,6 @@ class SanSwitch < BrocadeSanDevice
     return @loaded[key(cmd)]
   end
   
-  private
-  
   def key(cmd)
     cmd.gsub(/\s+/,'_').to_sym
   end
@@ -38,9 +53,10 @@ class SanSwitch
     
     def parse_line(line)
       return if line.empty?
+      
       # we detect which command output we parse - commands start with > on the XML line
       @parsed[:parsing_position] = case 
-        when line.match(/^>/) then line.split(" ")[1]
+        when line.match(/^#{SanSwitch::QUERY_PROMPT}/) then line.split(" ")[1]
         else @parsed[:parsing_position]
       end
       
@@ -49,12 +65,12 @@ class SanSwitch
       
       # we parse only certain commands
       case 
-        when @parsed[:parsing_position].match(/SWITCHSHOW/i)
-          parse_switchshow(line)
+        when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='simple' ? k : nil }.compact.join("|")}/i)
+          parse_simple(line)
       end
     end
   
-    def parse_switchshow(line)
+    def parse_simple(line)
       case
         when line.match(/^zoning/) 
           @parsed[:zoning_enabled]=line.match(/:\s+ON/) ? true : false

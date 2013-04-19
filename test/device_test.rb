@@ -1,53 +1,40 @@
 require 'brocadesan'
 require 'minitest/autorun'
 require 'output_reader'
+#require 'net/ssh/test'
 
 class DeviceTest < MiniTest::Unit::TestCase
+  #include Net::SSH::Test
   def setup
-    @ssh_con = DummySSHConnection.new
-    reload_connection
+    @device = BrocadeSanDevice.new("test","test","test")
   end
   
-  def reload_connection
-    # Net:SSH start is stub with DummySSHConnection that will mimic any further Net:SSH commands required
-    Net::SSH.stub :start, @ssh_con do 
-      @device = BrocadeSanDevice.open_connection("test","test","test")
-    end
-  end
-  
-  def test_connection_setup
+  def test_device_setup
     assert_instance_of BrocadeSanDevice, @device
-    assert @device.instance_variable_get(:@connection)===@ssh_con
-  end
-
-    
-  def test_connect_method
-    @device.instance_variable_set(:@connection,nil)
-    Net::SSH.stub :start, @ssh_con do 
-      @result=@device.connect
-    end
-    assert_equal  @device.instance_variable_get(:@connection), @ssh_con
-    
-    #good connection returns connection
-    assert_equal @result, @ssh_con
-    
   end
   
   def test_query
-    #returns Response Object if connection ok
     response=@device.query("test")
     assert_instance_of BrocadeSanDevice::Response, response
-    assert_equal BrocadeSanDevice::QUERY_PROMPT+"test\n"+DummySSHConnection::DATA, response.data
-    assert_equal DummySSHConnection::ERROR, response.errors
-    
-    #returns exception if there is no connection
-    exception = assert_raises(BrocadeSanDevice::Error) do 
-      @device = BrocadeSanDevice.new("test","test","test")
-      @device.query("test")
-    end
-    assert_match /No connection/, exception.message
+    assert_equal BrocadeSanDevice::QUERY_PROMPT+"test\n"+Net::SSH::DATA, response.data
+    assert_equal Net::SSH::ERROR, response.errors
   end
   
+  def test_query_in_session
+    @device.session do 
+      response=@device.query("test")
+      assert_instance_of BrocadeSanDevice::Response, response
+      assert_equal BrocadeSanDevice::QUERY_PROMPT+"test\n"+Net::SSH::DATA, response.data
+      assert_equal Net::SSH::ERROR, response.errors
+    end
+  end
+  
+  def test_session
+    @device.session do 
+      assert_instance_of Net::SSH::Session, @device.instance_variable_get(:@session)
+    end
+    assert @device.instance_variable_get(:@session).closed?
+  end
 end
 
 class ResponseTest < MiniTest::Unit::TestCase
@@ -63,25 +50,40 @@ class ResponseTest < MiniTest::Unit::TestCase
   end
 end
 
-class DummySSHConnection
+module Net::SSH
   DATA="Response"
   ERROR="Error"
   CHANNEL="channel"
   
-  def exec(command, &block)
-    @data=DATA
-    @error=ERROR
-    @ch=CHANNEL
+  def self.start(host, user, options={}, &block)
     
     if block
-      block.call(@ch, :stdout, @data)
-      block.call(@ch, :stderr, @error)
+      yield Session.new
     else
-      $stdout.print(data)
+      return Session.new
     end
   end
   
-  def self.start(host, user, options={}, &block)
-    return self.new
-  end  
+  class Session 
+    def exec(command, &block)
+      @data=DATA
+      @error=ERROR
+      @ch=CHANNEL
+      
+      if block
+        block.call(@ch, :stdout, @data)
+        block.call(@ch, :stderr, @error)
+      else
+        $stdout.print(data)
+      end
+    end
+      
+    def close
+      @closed=true
+    end
+    
+    def closed?
+      @closed.nil? ? false : @closed
+    end
+  end
 end

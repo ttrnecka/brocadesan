@@ -8,25 +8,35 @@ class BrocadeSanDevice
       @user=user
       @password=password
       @opts=opts
-      @connection=nil
-  end
-  
-  def self.open_connection(address,user,password,opts={})
-    dev=self.new(address,user,password,opts)
-    dev.connect
-    return dev
-  end
-  
-  def connect
-    @connection = Net::SSH.start(@address,@user, :password=>@password)
+      @session=nil
   end
   
   def query(cmd)
-    raise BrocadeSanDevice::Error, "No connection" if @connection.nil?
+    output=nil
+    if @session
+      output=exec(@session,cmd)
+    else
+      Net::SSH.start @address, @user, :password=>@password do |ssh|
+        output=exec(ssh,cmd)
+      end
+    end
     
+    return output
+  end
+  
+  def session
+    @session=Net::SSH.start @address, @user, :password=>@password
+    yield
+    
+  ensure
+    @session.close if @session
+  end
+  
+  private
+  
+  def exec(ssh_session,cmd)
     output=BrocadeSanDevice::Response.new
-    
-    @connection.exec cmd do |ch, stream, data|
+    ssh_session.exec cmd do |ch, stream, data|
       if stream == :stderr
         output.errors=data
       else
@@ -36,8 +46,9 @@ class BrocadeSanDevice
     
     return output
   end
-  
-  
+end
+
+class BrocadeSanDevice
   class Response
     attr_accessor :data, :errors, :parsed
   
@@ -57,9 +68,11 @@ class BrocadeSanDevice
     
     def parse
       reset if !@parsed.kind_of? Hash
+      
       @data.split("\n").each do |line|
         parse_line line
       end
+      
       @parsed[:parsing_position]="end"
     end
     

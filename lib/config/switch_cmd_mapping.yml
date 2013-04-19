@@ -1,3 +1,48 @@
 :name: 
- :cmd: switchshow
- :attr: switch_name
+    :cmd: switchshow
+    :attr: switch_name
+:state: 
+    :cmd: switchshow
+    :attr: switch_state
+:mode: 
+    :cmd: switchshow
+    :attr: switch_mode
+:role: 
+    :cmd: switchshow
+    :attr: switch_role
+:domain: 
+    :cmd: switchshow
+    :attr: switch_domain
+:id: 
+    :cmd: switchshow
+    :attr: switch_id
+:wwn: 
+    :cmd: switchshow
+    :attr: switch_wwn
+:zoning_enabled: 
+    :cmd: switchshow
+    :attr: zoning_enabled
+:active_config: 
+    :cmd: switchshow
+    :attr: active_config
+:switch_beacon: 
+    :cmd: switchshow
+    :attr: switch_beacon
+:fc_router: 
+    :cmd: switchshow
+    :attr: fc_router
+:allow_xisl_use: 
+    :cmd: switchshow
+    :attr: allow_xisl_use
+:ls_attributes: 
+    :cmd: switchshow
+    :attr: ls_attributes
+:kernel: 
+    :cmd: version
+    :attr: kernel    
+:firmware: 
+    :cmd: version
+    :attr: fabric_os
+:vf: 
+    :cmd: "fosconfig --show"
+    :attr: virtual_fabric
