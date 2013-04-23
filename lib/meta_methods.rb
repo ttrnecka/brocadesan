@@ -119,4 +119,40 @@ class SanSwitch
 #
 # Returns value in (string) format
 
+##
+# :method: dls
+# If called with +true+ argument it will get the dlsshow from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: iod
+# If called with +true+ argument it will get the iodshow from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: status
+# If called with +true+ argument it will get the switch_state from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: status_details
+# If called with +true+ argument it will get the switchstatusshow from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: ip
+# If called with +true+ argument it will get the ip_address from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: supportshow
+# If called with +true+ argument it will get the supportshow from the switch instead of cache
+#
+# Returns value in (string) format
+
 end

@@ -99,10 +99,39 @@ class SanSwitch < BrocadeSanDevice
     @configuration[CMD_MAPPING[attr.to_sym][:attr].to_sym]
   end
   
+  # Return all zone configurations as array of ZoneConfiguration
+  def zone_configurations(forced=false)
+    cmd="cfgshow"
+    filter="-e cfg: -e configuration:"
+    if !@loaded || !@loaded[key(cmd+filter)] || forced
+      refresh(cmd,filter)
+      
+      @configuration[:zone_configurations]=[]
+      
+      #only 1 effective
+      @configuration[:zone_configurations]<<ZoneConfiguration.new(@configuration[:effective_configuration][0],:effective=>true)
+      
+      # storing defined
+      @configuration[:defined_configuration].each do |cfg|
+        # effective is not stored again to prevent duplicity
+        next if @configuration[:effective_configuration].include? cfg
+        @configuration[:zone_configurations]<<ZoneConfiguration.new(cfg)
+      end
+    end
+    @configuration[:zone_configurations]
+  end
+  
+  # Returns effective zone configuration
+  
+  def effective_configuration
+    self.zone_configurations.select {|z| z.effective == true}.first
+  end
+  
   private
   
-  def refresh(cmd)
-    response=query(fullcmd(cmd))
+  def refresh(cmd,filter=nil)
+    grep_exp=filter.nil? ? "" : " | grep #{filter}" 
+    response=query(fullcmd(cmd)+grep_exp)
     response.parse
     
     #puts response.data
@@ -111,7 +140,7 @@ class SanSwitch < BrocadeSanDevice
     @configuration.merge!(response.parsed)
     
     @loaded||={}
-    @loaded[key(cmd)]=true
+    @loaded[key(cmd+filter.to_s)]=true
     
     return @loaded[key(cmd)]
   end
@@ -145,17 +174,19 @@ class SanSwitch
     private 
     
     def before_parse
+      reset
     end
     
     def after_parse
       @parsed[:ports].uniq! if @parsed[:ports]
+      @parsed.delete(:pointer)
     end
     
     def parse_line(line)
       return if line.empty?
       # we detect which command output we parse - commands start with > on the XML line
       @parsed[:parsing_position] = case 
-        when line.match(/^#{SanSwitch::QUERY_PROMPT}/) then line.gsub(/(fosexec --fid \d+ \')|\'$/,"").split(" ")[1]
+        when line.match(/^#{SanSwitch::QUERY_PROMPT}/) then line.gsub(/(fosexec --fid \d+ \')|\'$|\' \|.*$/,"").split(" ")[1]
         else @parsed[:parsing_position]
       end
       #do not process if we are on query line
@@ -167,6 +198,10 @@ class SanSwitch
           parse_simple(line)
         when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='oneline' ? k : nil }.compact.join("|")}/i)
           parse_oneline(line)
+        when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='multiline' ? k : nil }.compact.join("|")}/i)
+          parse_multiline(line)
+        when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='fancy' ? k : nil }.compact.join("|")}/i)
+          parse_fancy(line)
       end
     end
     
@@ -174,6 +209,16 @@ class SanSwitch
       @parsed[@parsed[:parsing_position].to_sym]=line
     end
   
+    def parse_multiline(line)
+      if line.match(/^\s*[a-z]+.*:/i)
+        arr = line.split(":")
+        @parsed[arr[0].strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym]=arr[1..-1].join(":").strip
+      else
+        @parsed[@parsed[:parsing_position].to_sym]||=""
+        @parsed[@parsed[:parsing_position].to_sym]+=line+"\n"
+      end
+    end
+    
     def parse_simple(line)
       case
         #extra handling
@@ -215,6 +260,25 @@ class SanSwitch
             @parsed[arr[0].strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym]=arr[1..-1].join(":").strip
           end
         end  
+    end
+    
+    def parse_fancy(line)
+      # used for cfgshow for example
+      if line.match(/^\s*[a-z]+.*:/i)
+        key=line.split(":")[0].strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym 
+        after_colon=line.split(":")[1].strip if line.split(":").size>1
+        
+        # if there is value after :
+        if after_colon 
+          value=after_colon.split(" ")[0].strip 
+          member=after_colon.split(" ").length>1 ? after_colon.split(" ")[1..-1].join(" ") : ""
+          @parsed[:pointer]<<value
+        # if not it is superkey
+        else
+          @parsed[key]||=[]
+          @parsed[:pointer]=@parsed[key]
+        end
+      end    
     end
   end
 end

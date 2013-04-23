@@ -34,7 +34,7 @@ class SanSwitchTest < MiniTest::Unit::TestCase
   
   def test_get
     @output_dir=File.join(Dir.pwd,"test","outputs")
-    read_all_starting_with "switch" do |file,output|
+    read_all_starting_with "switch_" do |file,output|
       init_dev
       response=SanSwitch::Response.new
       response.data=output
@@ -106,6 +106,28 @@ class SanSwitchTest < MiniTest::Unit::TestCase
     @device.set_context 99
     assert_equal "fosexec --fid 99 \'test\'", @device.send(:fullcmd,"test")
   end
+  
+  def test_zone_cfgs_and_effective_cfg
+    @output_dir=File.join(Dir.pwd,"test","outputs")
+    read_all_starting_with "cfgshow_" do |file,output|
+      response=SanSwitch::Response.new
+      response.data=output
+      init_dev
+      yaml=read_yaml_for(file)
+      @device.stub :query, response do 
+        cfgs=@device.zone_configurations.map {|c| c.name }
+        yaml[:defined_configuration].each do |dcfg|
+          assert cfgs.include?(dcfg)
+        end   
+        ef_cfg=@device.zone_configurations.map {|c| c.name if c.effective }.delete_if {|c| c==nil}
+        assert_equal yaml[:defined_configuration], ef_cfg
+        
+        #test if effective_configuration method
+        assert_equal yaml[:defined_configuration][0], @device.effective_configuration.name
+      end
+    end
+  end
+  
 end
 
 class SanSwitchResponseTest < MiniTest::Unit::TestCase
@@ -121,10 +143,10 @@ class SanSwitchResponseTest < MiniTest::Unit::TestCase
     end
   end
   
-  def test_after_parse
+  def test_after_before_parse
     response=SanSwitch::Response.new
     response.parsed[:ports]=["A","B","A"]
     response.parse
-    assert_equal ["A","B"], response.parsed[:ports]
+    assert_equal nil, response.parsed[:ports]
   end
 end

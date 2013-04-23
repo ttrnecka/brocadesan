@@ -58,3 +58,21 @@
 :chassisname:
     :cmd: "chassisname"
     :attr: chassisname
+:dls:
+    :cmd: "dlsshow"
+    :attr: dlsshow
+:iod:
+    :cmd: "iodshow"
+    :attr: iodshow
+:status:
+    :cmd: "switchstatusshow"
+    :attr: switch_state
+:status_details:
+    :cmd: "switchstatusshow"
+    :attr: switchstatusshow
+:ip:
+    :cmd: "switchstatusshow"
+    :attr: ip_address
+:supportshow:
+    :cmd: "supportshow"
+    :attr: supportshow

@@ -4,4 +4,9 @@
 :lscfg: simple
 :aptpolicy: simple
 :chassisname: oneline
+:dlsshow: oneline
+:iodshow: oneline
+:switchstatusshow: multiline
+:supportshow: multiline
+:cfgshow: fancy
     
