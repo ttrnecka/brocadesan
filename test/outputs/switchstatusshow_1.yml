@@ -1,0 +1,19 @@
+:switch_health_report_report_time: '04/23/2013 10:56:38 AM'
+:switch_name:    IDAA1C01
+:ip_address:     15.187.118.17
+:switch_state:    HEALTHY
+:duration:       '56:01'
+:switchstatusshow: |
+ Power supplies monitor  HEALTHY
+ Temperatures monitor    HEALTHY
+ Fans monitor            HEALTHY
+ WWN servers monitor     HEALTHY
+ CP monitor      HEALTHY
+ Blades monitor          HEALTHY
+ Core Blades monitor     HEALTHY
+ Flash monitor           HEALTHY
+ Marginal ports monitor  HEALTHY
+ Faulty ports monitor    HEALTHY
+ Missing SFPs monitor    HEALTHY
+ All ports are healthy
+:parsing_position: end

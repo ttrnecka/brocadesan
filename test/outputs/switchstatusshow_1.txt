@@ -1,0 +1,21 @@
+> switchstatusshow
+Switch Health Report                        Report time: 04/23/2013 10:56:38 AM
+Switch Name:    IDAA1C01
+IP address:     15.187.118.17
+SwitchState:    HEALTHY
+Duration:       56:01
+
+Power supplies monitor  HEALTHY
+Temperatures monitor    HEALTHY
+Fans monitor            HEALTHY
+WWN servers monitor     HEALTHY
+CP monitor      HEALTHY
+Blades monitor          HEALTHY
+Core Blades monitor     HEALTHY
+Flash monitor           HEALTHY
+Marginal ports monitor  HEALTHY
+Faulty ports monitor    HEALTHY
+Missing SFPs monitor    HEALTHY
+
+
+All ports are healthy

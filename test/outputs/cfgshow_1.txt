@@ -1,0 +1,5 @@
+> cfgshow | grep -e cfg: -e configuration:
+Defined configuration:
+ cfg:   AIS_IDA_SANA
+Effective configuration:
+ cfg:   AIS_IDA_SANA
