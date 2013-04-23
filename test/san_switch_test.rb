@@ -15,17 +15,27 @@ class SanSwitchTest < MiniTest::Unit::TestCase
   def test_query
     response=@device.query("test")
     assert_instance_of SanSwitch::Response, response
-    assert_equal SanSwitch::QUERY_PROMPT+"test\n"+Net::SSH::DATA, response.data
-    assert_equal Net::SSH::ERROR, response.errors
+    assert_equal SanSwitch::QUERY_PROMPT+"test\n"+Net::SSH::DATA+"\n", response.data
+    assert_equal Net::SSH::ERROR+"\n", response.errors
   end
   
   def test_device_setup
     assert_instance_of SanSwitch, @device
   end
   
+  def test_set_context
+    @device.set_context(3)
+    assert_equal 3, @device.fid
+    assert_empty @device.instance_variable_get(:@loaded)
+    assert_equal 3, @device.fid
+    @device.set_context("A3")
+    assert_equal 128, @device.fid
+  end
+  
   def test_get
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "switch" do |file,output|
+      init_dev
       response=SanSwitch::Response.new
       response.data=output
       @device.stub :query, response do 
@@ -43,13 +53,27 @@ class SanSwitchTest < MiniTest::Unit::TestCase
     end
   end
   
+  def test_get_with_vf
+    @output_dir=File.join(Dir.pwd,"test","outputs")
+    read_all_starting_with "vf_switch" do |file,output|
+      init_dev
+      response=SanSwitch::Response.new
+      response.data=output
+      @device.configuration[:virtual_fabric]="enabled"
+      @device.set_context 99
+        
+      @device.stub :query, response do 
+        assert_equal read_yaml_for(file)[:switch_name], @device.get(:name)        
+      end
+    end
+  end
+  
   def test_refresh
     #returns true and runs query if not loaded or forced, runs query
     @device.instance_variable_set(:@configuration,{:name=>"test", :parsing_position=>"test"})
     @device.send(:refresh, "switchshow")
     assert_equal a = {:name=>"test", :parsing_position=>"end"}, @device.configuration
-    assert_equal true, @device.instance_variable_get(:@loaded)[:switchshow]
-    
+    assert_equal true, @device.instance_variable_get(:@loaded)[:switchshow] 
   end
   
   def test_dynamic_methods
@@ -70,6 +94,18 @@ class SanSwitchTest < MiniTest::Unit::TestCase
       end
     end
   end
+  
+  def test_fullcmd
+    assert_equal "test", @device.send(:fullcmd,"test")
+    
+    #vf enabled but no fid
+    @device.configuration[:virtual_fabric]="enabled"
+    assert_equal "test", @device.send(:fullcmd,"test")
+    
+    #vf enabled and fid given
+    @device.set_context 99
+    assert_equal "fosexec --fid 99 \'test\'", @device.send(:fullcmd,"test")
+  end
 end
 
 class SanSwitchResponseTest < MiniTest::Unit::TestCase
@@ -83,5 +119,12 @@ class SanSwitchResponseTest < MiniTest::Unit::TestCase
       response.parse
       assert_equal read_yaml_for(file), response.parsed
     end
+  end
+  
+  def test_after_parse
+    response=SanSwitch::Response.new
+    response.parsed[:ports]=["A","B","A"]
+    response.parse
+    assert_equal ["A","B"], response.parsed[:ports]
   end
 end

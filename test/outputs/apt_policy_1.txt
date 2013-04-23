@@ -1,0 +1,6 @@
+> aptpolicy
+ Current Policy: 3
+
+ 3 : Default Policy
+ 1: Port Based Routing Policy
+ 3: Exchange Based Routing Policy

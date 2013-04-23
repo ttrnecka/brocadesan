@@ -12,7 +12,7 @@
 :fc_router:       "OFF"
 :allow_xisl_use: "OFF"
 :ls_attributes:  
- :fid: "128"
+ :fid: "99"
  :base_switch: "no"
  :default_switch: "yes"
  :address_mode: "0"

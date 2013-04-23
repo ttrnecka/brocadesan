@@ -14,18 +14,18 @@ class DeviceTest < MiniTest::Unit::TestCase
   end
   
   def test_query
-    response=@device.query("test")
+    response=@device.query("test","test2")
     assert_instance_of BrocadeSanDevice::Response, response
-    assert_equal BrocadeSanDevice::QUERY_PROMPT+"test\n"+Net::SSH::DATA, response.data
-    assert_equal Net::SSH::ERROR, response.errors
+    assert_equal BrocadeSanDevice::QUERY_PROMPT+"test\n"+Net::SSH::DATA+"\n"+BrocadeSanDevice::QUERY_PROMPT+"test2\n"+Net::SSH::DATA+"\n", response.data
+    assert_equal Net::SSH::ERROR+"\n"+Net::SSH::ERROR+"\n", response.errors
   end
   
   def test_query_in_session
     @device.session do 
       response=@device.query("test")
       assert_instance_of BrocadeSanDevice::Response, response
-      assert_equal BrocadeSanDevice::QUERY_PROMPT+"test\n"+Net::SSH::DATA, response.data
-      assert_equal Net::SSH::ERROR, response.errors
+      assert_equal BrocadeSanDevice::QUERY_PROMPT+"test\n"+Net::SSH::DATA+"\n", response.data
+      assert_equal Net::SSH::ERROR+"\n", response.errors
     end
   end
   
@@ -65,7 +65,7 @@ module Net::SSH
   end
   
   class Session 
-    def exec(command, &block)
+    def exec!(command, &block)
       @data=DATA
       @error=ERROR
       @ch=CHANNEL

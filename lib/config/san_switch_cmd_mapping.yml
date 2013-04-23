@@ -46,3 +46,15 @@
 :vf: 
     :cmd: "fosconfig --show"
     :attr: virtual_fabric
+:logical_switches:
+    :cmd: "lsconfig --show"
+    :attr: created_switches
+:ports:
+    :cmd: "switchshow"
+    :attr: ports
+:aptpolicy:
+    :cmd: "aptpolicy"
+    :attr: current_policy
+:chassisname:
+    :cmd: "chassisname"
+    :attr: chassisname

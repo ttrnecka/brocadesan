@@ -1,4 +1,7 @@
 :switchshow: simple
 :version: simple
 :fosconfig: simple
+:lscfg: simple
+:aptpolicy: simple
+:chassisname: oneline
     

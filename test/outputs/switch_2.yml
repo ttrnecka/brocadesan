@@ -1,0 +1,42 @@
+:switch_name:     H4C11R218-U02-ICB04
+:switch_type:     "72.3"
+:switch_state:    Online
+:switch_mode:     Native
+:switch_role:     Subordinate
+:switch_domain:   "29"
+:switch_id:       fffc1d
+:switch_wwn:      10:00:00:05:33:c6:e8:f6
+:zoning_enabled:  true
+:active_config:   ECS_SAN_B
+:switch_beacon:   "OFF"
+
+:ports:
+ -
+   :index: 0
+   :port: 0
+   :address: "1d0000"
+   :media: --
+   :speed: N8
+   :state: No_Module
+   :proto: FC
+   :comment: ''
+ -
+   :index: 1
+   :port: 1
+   :address: "1d0100"
+   :media: cu
+   :speed: AN
+   :state: No_Sync
+   :proto: FC
+   :comment: ''
+ -
+   :index: 17
+   :port: 17
+   :address: "1d1100"
+   :media: id
+   :speed: N8
+   :state: Online
+   :proto: FC
+   :comment: 'E-Port 10:00:00:05:33:9b:de:00 "H4C11R228-U03-B02" (upstream)'
+
+:parsing_position: end

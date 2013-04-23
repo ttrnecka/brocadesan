@@ -1,0 +1,18 @@
+> switchshow
+switchName:     H4C11R218-U02-ICB04
+switchType:     72.3
+switchState:    Online
+switchMode:     Native
+switchRole:     Subordinate
+switchDomain:   29
+switchId:       fffc1d
+switchWwn:      10:00:00:05:33:c6:e8:f6
+zoning:         ON (ECS_SAN_B)
+switchBeacon:   OFF
+
+Index Port Address Media Speed State     Proto
+==============================================
+   0   0   1d0000   --     N8   No_Module   FC
+   1   1   1d0100   cu     AN   No_Sync     FC
+  17  17   1d1100   id     N8   Online      FC  E-Port  10:00:00:05:33:9b:de:00 "H4C11R228-U03-B02" (upstream)
+

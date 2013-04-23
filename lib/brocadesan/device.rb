@@ -18,7 +18,7 @@ class BrocadeSanDevice
       @session=nil
   end
   
-  # Queries +cmd+ command directly. 
+  # Queries +cmds+ commands directly. 
   # This method is to be used to extend this API 
   # or 
   # to do more difficult queries that have to be parsed separately
@@ -32,13 +32,13 @@ class BrocadeSanDevice
   #
   # 
   # Returns instance of Response or raises error if the connectionm cannot be opened
-  def query(cmd)
+  def query(*cmds)
     output=nil
-    if @session
-      output=exec(@session,cmd)
+    if @session && !@session.closed?
+      output=exec(@session,cmds)
     else
       Net::SSH.start @address, @user, :password=>@password do |ssh|
-        output=exec(ssh,cmd)
+        output=exec(ssh,cmds)
       end
     end
     
@@ -68,18 +68,21 @@ class BrocadeSanDevice
   
   private
   
-  def exec(ssh_session,cmd)
+  def exec(ssh_session,cmds)
     # this approach is used to use Response of the calling class
     output=self.class::Response.new
-    output.data=QUERY_PROMPT+cmd+"\n"
-    ssh_session.exec cmd do |ch, stream, data|
-      if stream == :stderr
-        output.errors+=data
-      else
-        output.data+=data
+    cmds.each do |cmd|
+      output.data+=QUERY_PROMPT+cmd+"\n"
+      ssh_session.exec! cmd do |ch, stream, data|
+        if stream == :stderr
+          output.errors+=data
+        else
+          output.data+=data
+        end
       end
+      output.errors+="\n"
+      output.data+="\n"
     end
-    
     return output
   end
 end

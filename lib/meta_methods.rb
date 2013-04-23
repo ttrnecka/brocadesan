@@ -95,4 +95,28 @@ class SanSwitch
 #
 # Returns value in (string) format
 
+##
+# :method: logical_switches
+# If called with +true+ argument it will get the created_switches from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: ports
+# If called with +true+ argument it will get the ports from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: aptpolicy
+# If called with +true+ argument it will get the current_policy from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: chassisname
+# If called with +true+ argument it will get the chassisname from the switch instead of cache
+#
+# Returns value in (string) format
+
 end

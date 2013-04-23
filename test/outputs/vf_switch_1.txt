@@ -1,4 +1,4 @@
-> switchshow
+> fosexec --fid 99 'switchshow'
 switchName:     IDAA1C01
 switchType:     62.3
 switchState:    Online
@@ -11,7 +11,7 @@ zoning:         ON (AIS_IDA_SANA)
 switchBeacon:   OFF
 FC Router:      OFF
 Allow XISL Use: OFF
-LS Attributes:  [FID: 128, Base Switch: No, Default Switch: Yes, Address Mode 0]
+LS Attributes:  [FID: 99, Base Switch: No, Default Switch: Yes, Address Mode 0]
 
 Index Slot Port Address Media Speed State     Proto
 ===================================================
