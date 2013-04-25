@@ -1,0 +1,31 @@
+> cfgshow
+Defined configuration:
+ cfg:	AIS_IDA_SANA	zone1; 
+		zone2;zone3 
+ zone:	zone1	alias1; 
+		alias2 
+ zone:	zone2	alias1; 
+		alias3 
+ zone:	zone3	
+		alias3;alias4 
+ zone:	zone5	alias1;alias4 
+ alias:	alias1	50:01:43:80:03:BC:68:00 
+ alias:	alias2	
+		50:01:43:80:12:0E:2B:60 
+ alias:	alias3	
+		50:01:43:80:12:0E:25:18 
+ alias:	alias4	
+		50:01:43:80:18:69:33:70 
+
+Effective configuration:
+ cfg:	AIS_IDA_SANA	
+ zone:	zone1	
+		50:01:43:80:03:BC:68:00
+		50:01:43:80:12:0E:2B:60
+ zone:	zone2	
+		50:01:43:80:03:BC:68:00
+		50:01:43:80:12:0E:25:18
+ zone:	zone3	
+		50:01:43:80:12:0E:25:18
+		50:01:43:80:18:69:33:70
+

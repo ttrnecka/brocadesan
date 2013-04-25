@@ -99,38 +99,39 @@ class SanSwitch < BrocadeSanDevice
     @configuration[CMD_MAPPING[attr.to_sym][:attr].to_sym]
   end
   
-  # Return all zone configurations as array of ZoneConfiguration
-  def zone_configurations(forced=false)
+  # Returns all ZoneConfiguration's array
+  def zone_configurations(full=false,forced=false)
     cmd="cfgshow"
-    filter="-e cfg: -e configuration:"
+    filter = full==false ? "-e cfg: -e configuration:" : ""
     if !@loaded || !@loaded[key(cmd+filter)] || forced
       refresh(cmd,filter)
       
       @configuration[:zone_configurations]=[]
       
       #only 1 effective
-      @configuration[:zone_configurations]<<ZoneConfiguration.new(@configuration[:effective_configuration][0],:effective=>true)
+      #puts @configuration[:effective_configuration]
+      @configuration[:zone_configurations]<<ZoneConfiguration.new(@configuration[:effective_configuration][:cfg][0][:name],:effective=>true)
       
       # storing defined
-      @configuration[:defined_configuration].each do |cfg|
+      @configuration[:defined_configuration][:cfg].each do |cfg|
         # effective is not stored again to prevent duplicity
-        next if @configuration[:effective_configuration].include? cfg
-        @configuration[:zone_configurations]<<ZoneConfiguration.new(cfg)
+        next if @configuration[:effective_configuration][:cfg][0][:name]==cfg[:name]
+        @configuration[:zone_configurations]<<ZoneConfiguration.new(cfg[:name])
       end
     end
     @configuration[:zone_configurations]
   end
   
-  # Returns effective zone configuration
+  # Returns effective ZoneConfiguration
   
-  def effective_configuration
-    self.zone_configurations.select {|z| z.effective == true}.first
+  def effective_configuration(forced=false)
+    self.zone_configurations(forced).select {|z| z.effective == true}.first
   end
   
   private
   
-  def refresh(cmd,filter=nil)
-    grep_exp=filter.nil? ? "" : " | grep #{filter}" 
+  def refresh(cmd,filter="")
+    grep_exp=filter.empty? ? "" : " | grep #{filter}" 
     response=query(fullcmd(cmd)+grep_exp)
     response.parse
     
@@ -201,7 +202,7 @@ class SanSwitch
         when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='multiline' ? k : nil }.compact.join("|")}/i)
           parse_multiline(line)
         when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='fancy' ? k : nil }.compact.join("|")}/i)
-          parse_fancy(line)
+          parse_cfgshow(line)
       end
     end
     
@@ -257,28 +258,69 @@ class SanSwitch
         else
           if line.match(/^\s*[a-z]+.*:/i)
             arr = line.split(":")
-            @parsed[arr[0].strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym]=arr[1..-1].join(":").strip
+            @parsed[str_to_key(arr[0])]=arr[1..-1].join(":").strip
           end
         end  
     end
     
-    def parse_fancy(line)
-      # used for cfgshow for example
-      if line.match(/^\s*[a-z]+.*:/i)
-        key=line.split(":")[0].strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym 
-        after_colon=line.split(":")[1].strip if line.split(":").size>1
+    def parse_cfgshow(line)
+      return if @parsed[:effective_configuration] and !@parsed[:effective_configuration][:cfg].nil?
+      @parsed[:pointer]||=[]
+      
+      if (matches=line.match(/^\s*([a-z]+\s*[a-z]+):(.*)/i))
+        key=str_to_key(matches[1]) 
+        after_colon=matches[2].strip
         
-        # if there is value after :
-        if after_colon 
-          value=after_colon.split(" ")[0].strip 
-          member=after_colon.split(" ").length>1 ? after_colon.split(" ")[1..-1].join(" ") : ""
-          @parsed[:pointer]<<value
-        # if not it is superkey
+        # superkey
+        if after_colon.empty?
+          @parsed[key]||={}
+          # we have new superkey so we pop the old from pointer stack
+          # and we push the new in 
+          @parsed[:pointer].pop if !@parsed[:pointer].empty? 
+          @parsed[:pointer].push @parsed[key]
+        # subkey
         else
-          @parsed[key]||=[]
-          @parsed[:pointer]=@parsed[key]
+          # we define the last subkey as array
+          # and push the array to pointer stack
+          @parsed[:pointer].last[key]||=[]
+          @parsed[:pointer].push @parsed[:pointer].last[key] 
+          
+          # fist value is name of the key
+          # 2nd is list of key members 
+          value=after_colon.split(" ")[0].strip 
+          members=after_colon.split(" ").length>1 ? after_colon.split(" ")[1..-1].join(" ") : ""
+          
+          # push new key into the last pointer array
+          @parsed[:pointer].last<<{:name=>value }
+          
+          # assign members into the last pointer array item
+          if !members.empty?
+            @parsed[:pointer].last.last[:members]||=[]
+            members.split(";").each do |member|
+              @parsed[:pointer].last.last[:members]<<member.strip
+            end
+            # if the line does not end with ; next line starts with new key or super key
+            # hence we remove last pointer from stack as we are done with it
+            @parsed[:pointer].pop if !line.strip.match(/;$/)
+          end
         end
-      end    
+      # this line defines another members of last pointer key array item
+      elsif line.match(/^\t/)
+        # sometimes it is not defined yet
+        # we push the members in
+        @parsed[:pointer].last.last[:members]||=[]
+        line.split(";").each do |member|
+          @parsed[:pointer].last.last[:members]<<member.strip
+        end
+        # if the line does not end with ; next line starts with new key or super key
+        # hence we remove last pointer from stack as we are done with it
+        @parsed[:pointer].pop if !line.strip.match(/;$/)
+      end
+      true
+    end
+    
+    def str_to_key(str)
+      str.strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym
     end
   end
 end

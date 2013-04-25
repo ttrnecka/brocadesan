@@ -38,12 +38,13 @@ class SanSwitchTest < MiniTest::Unit::TestCase
       init_dev
       response=SanSwitch::Response.new
       response.data=output
+      yaml=read_yaml_for(file)
       @device.stub :query, response do 
-        assert_equal read_yaml_for(file)[:switch_name], @device.get(:name)        
+        assert_equal yaml[:switch_name], @device.get(:name)        
         # clear configuration
         @device.instance_variable_set(:@configuration,{})
         assert_nil  @device.get(:name) #nil if not reloaded
-        assert_equal read_yaml_for(file)[:switch_name], @device.get(:name,true) # ok if reloaded
+        assert_equal yaml[:switch_name], @device.get(:name,true) # ok if reloaded
         
         #raise error if unknow parameter is requested
         assert_raises SanSwitch::Error do 
@@ -82,14 +83,15 @@ class SanSwitchTest < MiniTest::Unit::TestCase
       response=SanSwitch::Response.new
       response.data=output
       init_dev
+      yaml=read_yaml_for(file)
       @device.stub :query, response do 
         SanSwitch::CMD_MAPPING.each do |k,v|
           #puts "#{v[:attr].to_sym}: #{read_yaml_for(file)[v[:attr].to_sym]} = #{@device.method(k).call}"
-          assert_equal read_yaml_for(file)[v[:attr].to_sym], @device.method(k).call        
+          assert_equal yaml[v[:attr].to_sym], @device.method(k).call        
           # clear configuration
           @device.instance_variable_set(:@configuration,{})
           assert_nil  @device.method(k).call #nil if not reloaded
-          assert_equal read_yaml_for(file)[v[:attr].to_sym], @device.method(k).call(true) # ok if reloaded
+          assert_equal yaml[v[:attr].to_sym], @device.method(k).call(true) # ok if reloaded
         end
       end
     end
@@ -116,14 +118,15 @@ class SanSwitchTest < MiniTest::Unit::TestCase
       yaml=read_yaml_for(file)
       @device.stub :query, response do 
         cfgs=@device.zone_configurations.map {|c| c.name }
-        yaml[:defined_configuration].each do |dcfg|
-          assert cfgs.include?(dcfg)
+        yaml[:defined_configuration][:cfg].each do |dcfg|
+          #puts dcfg.inspect
+          assert cfgs.include?(dcfg[:name])
         end   
         ef_cfg=@device.zone_configurations.map {|c| c.name if c.effective }.delete_if {|c| c==nil}
-        assert_equal yaml[:defined_configuration], ef_cfg
+        assert_equal yaml[:defined_configuration][:cfg][0][:name], ef_cfg.first
         
         #test if effective_configuration method
-        assert_equal yaml[:defined_configuration][0], @device.effective_configuration.name
+        assert_equal yaml[:defined_configuration][:cfg][0][:name], @device.effective_configuration.name
       end
     end
   end
