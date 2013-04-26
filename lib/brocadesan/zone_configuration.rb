@@ -23,7 +23,7 @@ class ZoneConfiguration
   # returns array of members
   
   def members
-    switch.zone_configurations(true) if @switch.configuration[:defined_configuration][:cfg][self.name].empty?
+    @switch.zone_configurations(true) if @switch.configuration[:defined_configuration][:cfg][self.name].empty?
     @switch.configuration[:defined_configuration][:cfg][self.name]
   end
 end
