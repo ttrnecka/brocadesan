@@ -1,4 +1,4 @@
-class SanSwitch
+class Brocade::SAN::Switch
 ##
 # :method: name
 # If called with +true+ argument it will get the switch_name from the switch instead of cache

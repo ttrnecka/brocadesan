@@ -1,3 +1,5 @@
+module Brocade module SAN
+  
 # Zone Configuration model
 class ZoneConfiguration
   # returns name of the zone configuration
@@ -6,14 +8,24 @@ class ZoneConfiguration
   # true if configuration is effective, false if defined
   attr_reader :effective
   
-  # array of all zones members
-  
-  attr_reader :members
-  
   # init method
-  def initialize(name,opts={})
+  def initialize(name,switch,opts={}) # :nodoc:
+    if switch.class==Switch
+      @switch=switch
+    else
+      raise Switch::Error.new("#{switch} is not instance of SanSwitch!!!")
+    end
+    @switch=switch if switch.class==Switch
     @name=name
-    @members=[]
     @effective=opts[:effective].nil? ? false : opts[:effective] 
   end
+  
+  # returns array of members
+  
+  def members
+    switch.zone_configurations(true) if @switch.configuration[:defined_configuration][:cfg][self.name].empty?
+    @switch.configuration[:defined_configuration][:cfg][self.name]
+  end
 end
+
+end; end

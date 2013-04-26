@@ -13,7 +13,7 @@ You can use BrocadeSAN in 2 different ways:
 
   # this will query the switch name and version and open connection to switch twice
   
-  switch=SanSwitch.new("address","user","password")
+  switch=Brocade::SAN::Switch.new("address","user","password")
   
   switch.name
   switch.version
@@ -22,7 +22,7 @@ You can use BrocadeSAN in 2 different ways:
   
   # this will query the switch name and version and open connection to switch only once
   
-  switch=SanSwitch.new("address","user","password")
+  switch=Brocade::SAN::Switch.new("address","user","password")
   
   switch.session do 
 	switch.name

@@ -1,51 +1,32 @@
 :defined_configuration:
  :cfg:
-  - 
-    :name: AIS_IDA_SANA
-    :members:
-     - zone1
-     - zone2
-     - zone3
+  AIS_IDA_SANA:
+   - zone1
+   - zone2
+   - zone3
  :zone:
-  - 
-    :name: zone1
-    :members:
-     - alias1
-     - alias2
-  - 
-    :name: zone2
-    :members:
-     - alias1
-     - alias3
-  - 
-    :name: zone3
-    :members:
-     - alias3
-     - alias4
-  - 
-    :name: zone5
-    :members:
-     - alias1
-     - alias4
+  zone1:
+   - alias1
+   - alias2
+  zone2:
+   - alias1
+   - alias3
+  zone3:
+   - alias3
+   - alias4
+  zone5:
+   - alias1
+   - alias4
  :alias:
-  -
-    :name: alias1
-    :members:
-     - 50:01:43:80:03:BC:68:00
-  -
-    :name: alias2
-    :members:
-     - 50:01:43:80:12:0E:2B:60
-  -
-    :name: alias3
-    :members:
-     - 50:01:43:80:12:0E:25:18
-  -
-    :name: alias4
-    :members:
-     - 50:01:43:80:18:69:33:70
+  alias1:
+   - 50:01:43:80:03:BC:68:00
+  alias2:
+   - 50:01:43:80:12:0E:2B:60
+  alias3:
+   - 50:01:43:80:12:0E:25:18
+  alias4:
+   - 50:01:43:80:18:69:33:70
 :effective_configuration:
  :cfg:
-  - 
-    :name: AIS_IDA_SANA
+  AIS_IDA_SANA: []
 :parsing_position: end

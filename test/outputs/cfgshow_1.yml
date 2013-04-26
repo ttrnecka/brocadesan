@@ -1,9 +1,7 @@
 :defined_configuration:
  :cfg:
-  - 
-    :name: AIS_IDA_SANA
+  AIS_IDA_SANA: []
 :effective_configuration:
  :cfg:
-  - 
-    :name: AIS_IDA_SANA
+  AIS_IDA_SANA: []
 :parsing_position: end

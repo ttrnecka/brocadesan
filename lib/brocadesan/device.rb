@@ -10,7 +10,7 @@ class BrocadeSanDevice
   QUERY_PROMPT="> "
   
   # Initialization method, +opts+ not used yet 
-  def initialize(address,user,password,opts={})
+  def initialize(address,user,password,opts={}) # :nodoc:
       @address=address
       @user=user
       @password=password
@@ -98,10 +98,10 @@ class BrocadeSanDevice
     # contains errors raised by SSH exec
     attr_accessor :errors
     # contains parsed information after the parse method ran
-    attr_accessor :parsed
+    attr_accessor :parsed # :nodoc:
   
     #initialization method
-    def initialize
+    def initialize # :nodoc:
       @errors=""
       @data=""
       @parsed = {
@@ -111,9 +111,7 @@ class BrocadeSanDevice
     
     # Resets all parsed data
     #
-    # Use only if you plan to use query command directly and want to clear the previous data
-    # If you use 2nd query without reset if will only merge the new parsed data with the existing
-    def reset
+    def reset # :nodoc:
       @parsed = {
        :parsing_position=>nil
       }
@@ -122,7 +120,7 @@ class BrocadeSanDevice
     # Parse the current data and stores result to +parsed+.
     #
     # Any class that extends this class should override the private parse_line method and store results into +parsed+ hash
-    def parse
+    def parse # :nodoc:
       reset if !@parsed.kind_of? Hash
       
       @data.split("\n").each do |line|

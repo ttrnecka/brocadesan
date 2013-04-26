@@ -1,4 +1,6 @@
 require 'brocadesan/monkey/string'
 require 'brocadesan/device'
+require 'brocadesan/switch'
 require 'brocadesan/zone_configuration'
-require 'brocadesan/san_switch'
+require 'brocadesan/zone'
+require 'brocadesan/alias'

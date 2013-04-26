@@ -2,25 +2,27 @@ require 'brocadesan'
 require 'minitest/autorun'
 require 'output_reader'
 
-class SanSwitchTest < MiniTest::Unit::TestCase
+module Brocade module SAN
+  
+class SwitchTest < MiniTest::Unit::TestCase
   include OutputReader
   def setup
     init_dev
   end
   
   def init_dev
-    @device = SanSwitch.new("test","test","test")
+    @device = Switch.new("test","test","test")
   end
   
   def test_query
     response=@device.query("test")
-    assert_instance_of SanSwitch::Response, response
-    assert_equal SanSwitch::QUERY_PROMPT+"test\n"+Net::SSH::DATA+"\n", response.data
+    assert_instance_of Switch::Response, response
+    assert_equal Switch::QUERY_PROMPT+"test\n"+Net::SSH::DATA+"\n", response.data
     assert_equal Net::SSH::ERROR+"\n", response.errors
   end
   
   def test_device_setup
-    assert_instance_of SanSwitch, @device
+    assert_instance_of Switch, @device
   end
   
   def test_set_context
@@ -36,7 +38,7 @@ class SanSwitchTest < MiniTest::Unit::TestCase
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "switch_" do |file,output|
       init_dev
-      response=SanSwitch::Response.new
+      response=Switch::Response.new
       response.data=output
       yaml=read_yaml_for(file)
       @device.stub :query, response do 
@@ -47,7 +49,7 @@ class SanSwitchTest < MiniTest::Unit::TestCase
         assert_equal yaml[:switch_name], @device.get(:name,true) # ok if reloaded
         
         #raise error if unknow parameter is requested
-        assert_raises SanSwitch::Error do 
+        assert_raises Switch::Error do 
            @device.get(:dummy,true)
         end
       end
@@ -58,7 +60,7 @@ class SanSwitchTest < MiniTest::Unit::TestCase
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "vf_switch" do |file,output|
       init_dev
-      response=SanSwitch::Response.new
+      response=Switch::Response.new
       response.data=output
       @device.configuration[:virtual_fabric]="enabled"
       @device.set_context 99
@@ -80,12 +82,12 @@ class SanSwitchTest < MiniTest::Unit::TestCase
   def test_dynamic_methods
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "" do |file,output|
-      response=SanSwitch::Response.new
+      response=Switch::Response.new
       response.data=output
       init_dev
       yaml=read_yaml_for(file)
       @device.stub :query, response do 
-        SanSwitch::CMD_MAPPING.each do |k,v|
+        Switch::CMD_MAPPING.each do |k,v|
           #puts "#{v[:attr].to_sym}: #{read_yaml_for(file)[v[:attr].to_sym]} = #{@device.method(k).call}"
           assert_equal yaml[v[:attr].to_sym], @device.method(k).call        
           # clear configuration
@@ -109,37 +111,64 @@ class SanSwitchTest < MiniTest::Unit::TestCase
     assert_equal "fosexec --fid 99 \'test\'", @device.send(:fullcmd,"test")
   end
   
-  def test_zone_cfgs_and_effective_cfg
+  def test_zone_cfgs_and_effective_cfg_and_zones
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "cfgshow_" do |file,output|
-      response=SanSwitch::Response.new
+      response=Switch::Response.new
       response.data=output
       init_dev
       yaml=read_yaml_for(file)
       @device.stub :query, response do 
         cfgs=@device.zone_configurations.map {|c| c.name }
-        yaml[:defined_configuration][:cfg].each do |dcfg|
-          #puts dcfg.inspect
-          assert cfgs.include?(dcfg[:name])
+        yaml[:defined_configuration][:cfg].each do |config, members|
+          assert cfgs.include?(config)
         end   
         ef_cfg=@device.zone_configurations.map {|c| c.name if c.effective }.delete_if {|c| c==nil}
-        assert_equal yaml[:defined_configuration][:cfg][0][:name], ef_cfg.first
+        assert_equal yaml[:defined_configuration][:cfg].keys[0], ef_cfg.first
         
         #test if effective_configuration method
-        assert_equal yaml[:defined_configuration][:cfg][0][:name], @device.effective_configuration.name
+        assert_equal yaml[:defined_configuration][:cfg].keys[0], @device.effective_configuration.name
+        
+        # test zones
+        if yaml[:defined_configuration][:zone]
+          zones=@device.zones.map {|z| z.name }
+          yaml[:defined_configuration][:zone].each do |zone, members|
+            assert zones.include?(zone)
+          end   
+          
+          # testig active zones
+          zones_1=@device.effective_configuration.members
+          zones_2=@device.zones
+          
+          zones_2.each do |zone|
+            if zones_1.include? zone.name
+              assert zone.active
+            else
+              refute zone.active
+            end
+          end
+        end
+        
+        # test aliases
+        if yaml[:defined_configuration][:alias]
+          aliases=@device.aliases.map {|a| a.name }
+          yaml[:defined_configuration][:alias].each do |al, members|
+            assert aliases.include?(al)
+          end   
+        end
       end
     end
   end
   
 end
 
-class SanSwitchResponseTest < MiniTest::Unit::TestCase
+class SwitchResponseTest < MiniTest::Unit::TestCase
   include OutputReader
 
   def test_parse   
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "" do |file, output|
-      response=SanSwitch::Response.new
+      response=Switch::Response.new
       response.data=output
       response.parse
       assert_equal read_yaml_for(file), response.parsed
@@ -147,9 +176,11 @@ class SanSwitchResponseTest < MiniTest::Unit::TestCase
   end
   
   def test_after_before_parse
-    response=SanSwitch::Response.new
+    response=Switch::Response.new
     response.parsed[:ports]=["A","B","A"]
     response.parse
     assert_equal nil, response.parsed[:ports]
   end
 end
+
+end; end

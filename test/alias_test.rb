@@ -4,7 +4,7 @@ require 'output_reader'
 
 module Brocade module SAN
   
-class ZoneConfigurationTest < MiniTest::Unit::TestCase
+class AliasTest < MiniTest::Unit::TestCase
   include OutputReader
   def setup
     init_dev
@@ -14,13 +14,12 @@ class ZoneConfigurationTest < MiniTest::Unit::TestCase
     @switch = Switch.new("test","test","test")
   end
   
-  def test_new_zone_config
-    cfg=ZoneConfiguration.new("test",@switch,:effective=>true)
-    assert_equal "test", cfg.name
-    assert cfg.effective
+  def test_new_alias 
+    al=Alias.new("test",@switch)
+    assert_equal "test", al.name
     
     assert_raises Switch::Error do 
-      cfg=ZoneConfiguration.new("test","switch",:effective=>true)
+      al=Alias.new("test","switch")
     end
   end
   
@@ -32,8 +31,8 @@ class ZoneConfigurationTest < MiniTest::Unit::TestCase
       init_dev
       yaml=read_yaml_for(file)
       @switch.stub :query, response do 
-        @switch.zone_configurations.each_with_index do |cfg,i|
-          assert_equal yaml[:defined_configuration][:cfg].values[i], cfg.members
+        @switch.aliases.each_with_index do |al,i|
+          assert_equal yaml[:defined_configuration][:alias].values[i], al.members
         end
       end
     end
