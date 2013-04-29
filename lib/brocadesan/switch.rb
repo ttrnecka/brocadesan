@@ -142,74 +142,29 @@ module SAN
     
     # returns Zone with name of +str+ if exists, +nil+ otherwise
     def find_zone(str)
-      name = find(str,:object=>:zone)
-      return nil if name.nil?
-      
-      members=@configuration[:defined_configuration][:zone][name]
-      
-      active_zones = effective_configuration(true).members
-      active = active_zones.include?(name) ? true : false
-      zone = Zone.new(name,:active=>active)
-      members.each do |member|
-        zone.add_member member
-      end
-      zone
+      zone = find(str,:object=>:zones)
     end
     
     # returns Zone array of Zones with name matching +regexp+ if exists, [] otherwise
     #
     # find is case insesitive
     def find_zones(regexp)
-      names = find(regexp,:object=>:zone,:find_mode=>:partial)
-      return [] if names==[nil]
-      
-      active_zones = effective_configuration(true).members
-      
-      zones=[]
-      names.each do |name|
-        members=@configuration[:defined_configuration][:zone][name]
-        active = active_zones.include?(name) ? true : false
-        zone = Zone.new(name,:active=>active)
-        members.each do |member|
-          zone.add_member member
-        end
-        zones<<zone
-      end
-      
+      zones = find(regexp,:object=>:zones,:find_mode=>:partial)
+      return [] if zones==[nil]
       zones
     end
     
     # returns Alias with name of +str+ if exists, +nil+ otherwise
     def find_alias(str)
-      name = find(str,:object=>:alias)
-      return nil if name.nil?
-      
-      members=@configuration[:defined_configuration][:alias][name]
-      
-      al = Alias.new(name)            
-      members.each do |member|
-       al.add_member member
-      end
-      al
+      al = find(str,:object=>:aliases)
     end
     
     # returns Alias array of Aliases with name matching +regexp+ if exists, [] otherwise
     #
     # find is case insesitive
     def find_aliases(regexp)
-      names = find(regexp,:object=>:alias,:find_mode=>:partial)
-      return [] if names==[nil]
-      
-      aliases=[]
-      names.each do |name|
-        members=@configuration[:defined_configuration][:alias][name]
-        al = Alias.new(name)    
-        members.each do |member|
-          al.add_member member
-        end
-        aliases<<al
-      end
-      
+      aliases = find(regexp,:object=>:aliases,:find_mode=>:partial)
+      return [] if aliases==[nil]
       aliases
     end
     
@@ -218,25 +173,26 @@ module SAN
     # finds configuration object by +str+. Case insensitive.
     # If not object type is specified it searches :zones. 
     #
-    # :object => :zone (default), :aliase, :cfg
+    # :object => :zones (default), :aliases, :zone_configurations
     # :find_mode => :partial, :full(default)
     #
     # Example:
     #
     # switch.find("zone1",:object=>:zone)
     def find(str,opts={})
-      obj = !opts[:object].nil? && [:zone,:alias,:cfg].include?(opts[:object]) ? opts[:object] : :zone
+      obj = !opts[:object].nil? && [:zones,:aliases,:zone_configurations].include?(opts[:object]) ? opts[:object] : :zones
       mode = !opts[:find_mode].nil? && [:partial].include?(opts[:find_mode]) ? opts[:find_mode] : :full
       
-      get_configshow(true)
+      objs=get_configshow(true)[obj]
       
       if mode==:full
-        keys=@configuration[:defined_configuration][obj].keys.find {|k| str.downcase == k.downcase}
+        key=objs.find {|k| str.downcase == k.name.downcase}
+        return nil if key.nil?
+        return key
       else
-        keys=@configuration[:defined_configuration][obj].keys.find_all {|k| k.match(/#{str}/i)}
+        keys=objs.find_all {|k| k.name.match(/#{str}/i)}
+        return keys
       end
-      
-      keys
     end
     
     def get_configshow(full=false,forced=false)
