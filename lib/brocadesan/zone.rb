@@ -7,25 +7,50 @@ class Zone
   
   # true if zone is active / member of effective ZoneConfiguration
   attr_reader :active
+  
+  # member naming rule
+  # member can be anything that match Switch::NAME_RULE
+  # or WWN or Domain,Index port notation
+  # allowed examples:
+  #
+  # 50:00:10:20:30:40:50:60
+  #
+  # 2,61
+  #
+  # alias_test_3
+  
+  MEMBER_RULE='([\da-f]{2}:){7}[\da-f]{2}|\d{1,3},\d{1,3}|' << Switch::NAME_RULE
    
+  # verifies if +str+ matches convetion defined in Zone::MEMBER_RULE
+  # raises Switch::Error: Incorrect name format if not
+  # this method is used internally mostly
+    
+  def self.verify_name(str)
+    raise Switch::Error.new("Incorrect name format \"#{str}\"") if !str.match(/#{MEMBER_RULE}/i)
+  end
+  
   # init method
-  def initialize(name,switch,opts={}) # :nodoc:
-    if switch.class==Switch
-      @switch=switch
-    else
-      raise Switch::Error.new("#{switch} is not instance of Switch!!!")
-    end
-    @switch=switch if switch.class==Switch
+  def initialize(name,opts={}) # :nodoc:
+    Switch::verify_name(name)
     @name=name
-    @active=opts[:active].nil? ? false : opts[:active] 
+    @active=opts[:active].nil? ? false : opts[:active]
+    @members=[] 
   end
   
   # returns array of members
   
   def members
-    switch.zones if @switch.configuration[:defined_configuration][:zone][self.name].empty?
-    @switch.configuration[:defined_configuration][:zone][self.name]
+    @members
   end
+  
+  # add member to the object
+  # members of zones are aliases, wwns or D,I notation
+  # +member+ is name of the member  
+  def add_member(member)
+    Zone::verify_name(member)
+    @members<<member
+  end
+  
 end
 
 end; end

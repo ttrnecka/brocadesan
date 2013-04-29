@@ -15,11 +15,10 @@ class AliasTest < MiniTest::Unit::TestCase
   end
   
   def test_new_alias 
-    al=Alias.new("test",@switch)
+    al=Alias.new("test")
     assert_equal "test", al.name
-    
-    assert_raises Switch::Error do 
-      al=Alias.new("test","switch")
+    assert_raises Switch::Error do
+      zone=Alias.new("test-d")
     end
   end
   
@@ -37,6 +36,15 @@ class AliasTest < MiniTest::Unit::TestCase
       end
     end
   end
+  
+  def test_add_member
+    a=Zone.new("test")
+    a.add_member "test1"
+    assert_equal ["test1"], a.members
+    a.add_member "test2"
+    assert_equal ["test1","test2"], a.members
+  end
+  
 end
 
 end; end

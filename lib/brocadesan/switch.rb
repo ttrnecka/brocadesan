@@ -28,6 +28,11 @@ module SAN
     # Maps each command to the parser method to use
     PARSER_MAPPING=YAML.load(File.read(File.join("lib","config","parser_mapping.yml")))
     
+    # zone configuration, zone and zone aliases naming rule
+    # must start with an alphabetic character and may contain 
+    # alphanumeric characters and the underscore ( _ ) character.
+    NAME_RULE='^[a-z][a-z_\d]*$'
+    
     # Used to dynamically create named methods based on CMD_MAPPING
     def self.attributes(args)
       args.each do |arg|
@@ -35,6 +40,14 @@ module SAN
          self.get(arg,forced)
        end
       end
+    end
+    
+    # verifies if name matches convetion defined in NAME_RULE
+    # raises Switch::Error: Incorrect name format if not
+    # this method is used internally mostly
+    
+    def self.verify_name(name)
+      raise Switch::Error.new("Incorrect name format \"#{name}\"") if !name.match(/#{NAME_RULE}/i)
     end
     
     # Creates a SanSwitch instance and tests a connection.
@@ -104,32 +117,127 @@ module SAN
     end
     
     # Returns all ZoneConfiguration's array
+    
     def zone_configurations(full=false,forced=false)
-      get_configshow(full,forced)
-      @configuration[:zone_configurations]
+      get_configshow(full,forced)[:zone_configurations]
     end
     
     # Returns effective ZoneConfiguration
     
-    def effective_configuration(forced=false)
-      self.zone_configurations(forced).select {|z| z.effective == true}.first
+    def effective_configuration(full=false,forced=false)
+      self.zone_configurations(full,forced).select {|z| z.effective == true}.first
     end
     
     # returns all zones defined on the switch as array of Zone
     
     def zones(forced=false)
-      get_configshow(true,forced)
-      @configuration[:zones]
+      get_configshow(true,forced)[:zones]
     end
     
     # returns all zones defined on the switch as array of Alias
     
     def aliases(forced=false)
-      get_configshow(true,forced)
-      @configuration[:aliases]
+      get_configshow(true,forced)[:aliases]
+    end
+    
+    # returns Zone with name of +str+ if exists, +nil+ otherwise
+    def find_zone(str)
+      name = find(str,:object=>:zone)
+      return nil if name.nil?
+      
+      members=@configuration[:defined_configuration][:zone][name]
+      
+      active_zones = effective_configuration(true).members
+      active = active_zones.include?(name) ? true : false
+      zone = Zone.new(name,:active=>active)
+      members.each do |member|
+        zone.add_member member
+      end
+      zone
+    end
+    
+    # returns Zone array of Zones with name matching +regexp+ if exists, [] otherwise
+    #
+    # find is case insesitive
+    def find_zones(regexp)
+      names = find(regexp,:object=>:zone,:find_mode=>:partial)
+      return [] if names==[nil]
+      
+      active_zones = effective_configuration(true).members
+      
+      zones=[]
+      names.each do |name|
+        members=@configuration[:defined_configuration][:zone][name]
+        active = active_zones.include?(name) ? true : false
+        zone = Zone.new(name,:active=>active)
+        members.each do |member|
+          zone.add_member member
+        end
+        zones<<zone
+      end
+      
+      zones
+    end
+    
+    # returns Alias with name of +str+ if exists, +nil+ otherwise
+    def find_alias(str)
+      name = find(str,:object=>:alias)
+      return nil if name.nil?
+      
+      members=@configuration[:defined_configuration][:alias][name]
+      
+      al = Alias.new(name)            
+      members.each do |member|
+       al.add_member member
+      end
+      al
+    end
+    
+    # returns Alias array of Aliases with name matching +regexp+ if exists, [] otherwise
+    #
+    # find is case insesitive
+    def find_aliases(regexp)
+      names = find(regexp,:object=>:alias,:find_mode=>:partial)
+      return [] if names==[nil]
+      
+      aliases=[]
+      names.each do |name|
+        members=@configuration[:defined_configuration][:alias][name]
+        al = Alias.new(name)    
+        members.each do |member|
+          al.add_member member
+        end
+        aliases<<al
+      end
+      
+      aliases
     end
     
     private
+    
+    # finds configuration object by +str+. Case insensitive.
+    # If not object type is specified it searches :zones. 
+    #
+    # :object => :zone (default), :aliase, :cfg
+    # :find_mode => :partial, :full(default)
+    #
+    # Example:
+    #
+    # switch.find("zone1",:object=>:zone)
+    def find(str,opts={})
+      obj = !opts[:object].nil? && [:zone,:alias,:cfg].include?(opts[:object]) ? opts[:object] : :zone
+      mode = !opts[:find_mode].nil? && [:partial].include?(opts[:find_mode]) ? opts[:find_mode] : :full
+      
+      get_configshow(true)
+      
+      if mode==:full
+        keys=@configuration[:defined_configuration][obj].keys.find {|k| str.downcase == k.downcase}
+      else
+        keys=@configuration[:defined_configuration][obj].keys.find_all {|k| k.match(/#{str}/i)}
+      end
+      
+      keys
+    end
     
     def get_configshow(full=false,forced=false)
       cmd="cfgshow"
@@ -137,50 +245,60 @@ module SAN
       
       if !@loaded || !@loaded[key(cmd+filter)] || forced
         refresh(cmd,filter)
+      end
         
         #storing configs  
-        @configuration[:zone_configurations]=[]
+        tmp_cfg={}
+        tmp_cfg[:zone_configurations]=[]
           
-        # only 1 effective
-          
-        effective=ZoneConfiguration.new(@configuration[:effective_configuration][:cfg].keys[0],self,:effective=>true)
-        @configuration[:zone_configurations]<<effective
           
         # storing defined
         @configuration[:defined_configuration][:cfg].each do |config,members|
-          # effective is not stored again to prevent duplicity
-          next if @configuration[:effective_configuration][:cfg].keys[0]==config
-          cfg=ZoneConfiguration.new(config,self)
-          @configuration[:zone_configurations]<<cfg
+   
+          effective =  @configuration[:effective_configuration][:cfg].keys[0]==config ? true : false
+          
+          cfg=ZoneConfiguration.new(config,:effective=>effective)
+          members.each do |member|
+            cfg.add_member member
+          end
+          
+          tmp_cfg[:zone_configurations]<<cfg
         end
         
         if full
           # storing zones
-          @configuration[:zones]=[]
+          tmp_cfg[:zones]=[]
           
           if @configuration[:defined_configuration][:zone]  
             # storing defined
-            active_zones=self.effective_configuration.members
+            active_zones = tmp_cfg[:zone_configurations].select {|z| z.effective == true}.first.members           
             @configuration[:defined_configuration][:zone].each do |zone,members|
               active = active_zones.include?(zone) ? true : false
-              z=Zone.new(zone,self,:active=>active)
-              @configuration[:zones]<<z
+              z=Zone.new(zone,:active=>active)
+              members.each do |member|
+                z.add_member member
+              end
+              tmp_cfg[:zones]<<z
             end
           end
           
+          
           # storing aliases
-          @configuration[:aliases]=[]
+          tmp_cfg[:aliases]=[]
           
           if @configuration[:defined_configuration][:alias]  
             # storing defined
             @configuration[:defined_configuration][:alias].each do |al_name,members|
-              al=Alias.new(al_name,self)
-              @configuration[:aliases]<<al
+              al=Alias.new(al_name)            
+              members.each do |member|
+                al.add_member member
+              end
+              tmp_cfg[:aliases]<<al
             end
           end
         end
-      end
-      true
+      
+      tmp_cfg
     end
     
     def refresh(cmd,filter="")
@@ -194,6 +312,8 @@ module SAN
       @configuration.merge!(response.parsed)
       
       @loaded||={}
+      # when we use filter we need to mark the cmd as false
+      @loaded[key(cmd)]=false
       @loaded[key(cmd+filter.to_s)]=true
       
       return @loaded[key(cmd)]

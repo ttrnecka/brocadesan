@@ -137,14 +137,14 @@ class SwitchTest < MiniTest::Unit::TestCase
           end   
           
           # testig active zones
-          zones_1=@device.effective_configuration.members
+          zones_1=@device.effective_configuration(true).members
           zones_2=@device.zones
           
           zones_2.each do |zone|
             if zones_1.include? zone.name
-              assert zone.active
+              assert zone.active, "Zone should be active"
             else
-              refute zone.active
+              refute zone.active, "Zone should not be active"
             end
           end
         end
@@ -159,6 +159,82 @@ class SwitchTest < MiniTest::Unit::TestCase
       end
     end
   end
+  
+  def test_find_zone_alias
+    @output_dir=File.join(Dir.pwd,"test","outputs")
+    read_all_starting_with "cfgshow_2" do |file,output|
+      response=Switch::Response.new
+      response.data=output
+      init_dev
+      yaml=read_yaml_for(file)
+      @device.stub :query, response do 
+        
+        # test find zones
+        yaml[:defined_configuration][:zone].each do |zone, members|
+          z=@device.find_zone(zone)
+          assert_equal zone, z.name
+          assert_equal yaml[:defined_configuration][:zone][zone], z.members
+          
+          # test insensitive
+          z=@device.find_zone(zone.upcase)
+          assert_equal zone, z.name
+        end
+        
+        assert_nil @device.find_zone("unknown")
+        
+        # test find aliases
+        yaml[:defined_configuration][:alias].each do |al, members|
+          a=@device.find_alias(al)
+          assert_equal al, a.name
+          assert_equal yaml[:defined_configuration][:alias][al], a.members
+          
+          # test insensitive
+          a=@device.find_alias(al.upcase)
+          assert_equal al, a.name
+        end
+        
+        assert_nil @device.find_alias("unknown")
+        
+      end
+    end
+  end
+  
+  
+  def test_find_zones_aliases
+    @output_dir=File.join(Dir.pwd,"test","outputs")
+    read_all_starting_with "cfgshow_2" do |file,output|
+      response=Switch::Response.new
+      response.data=output
+      init_dev
+      yaml=read_yaml_for(file)
+      @device.stub :query, response do 
+        
+        # test find zones
+        
+        z=@device.find_zones('zone')
+        assert_equal yaml[:defined_configuration][:zone].keys.find_all {|k| k.match(/zone/i)}, z.map {|zone| zone.name}
+          
+        # test insensitive
+        z=@device.find_zones('zone'.upcase)
+        assert_equal yaml[:defined_configuration][:zone].keys.find_all {|k| k.match(/zone/i)}, z.map {|zone| zone.name}
+        
+        assert_empty @device.find_zones("unknown")
+        
+        # test find aliases
+        
+        a=@device.find_aliases('alias')
+        assert_equal yaml[:defined_configuration][:alias].keys.find_all {|k| k.match(/alias/i)}, a.map {|a| a.name}
+          
+        # test insensitive
+        a=@device.find_aliases('alias'.upcase)
+        assert_equal yaml[:defined_configuration][:alias].keys.find_all {|k| k.match(/alias/i)}, a.map {|a| a.name}
+        
+        assert_empty @device.find_aliases("unknown")
+        
+      end
+    end
+  end
+  
   
 end
 

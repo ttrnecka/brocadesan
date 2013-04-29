@@ -15,12 +15,11 @@ class ZoneTest < MiniTest::Unit::TestCase
   end
   
   def test_new_zone 
-    zone=Zone.new("test",@switch,:active=>true)
+    zone=Zone.new("test",:active=>true)
     assert_equal "test", zone.name
     assert zone.active
-    
-    assert_raises Switch::Error do 
-      zone=Zone.new("test","switch",:active=>true)
+    assert_raises Switch::Error do
+      zone=Zone.new("test-d",:active=>true)
     end
   end
   
@@ -37,6 +36,14 @@ class ZoneTest < MiniTest::Unit::TestCase
         end
       end
     end
+  end
+  
+  def test_add_member
+    z=Zone.new("test")
+    z.add_member "test1"
+    assert_equal ["test1"], z.members
+    z.add_member "test2"
+    assert_equal ["test1","test2"], z.members
   end
 end
 

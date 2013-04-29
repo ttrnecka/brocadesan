@@ -15,12 +15,11 @@ class ZoneConfigurationTest < MiniTest::Unit::TestCase
   end
   
   def test_new_zone_config
-    cfg=ZoneConfiguration.new("test",@switch,:effective=>true)
+    cfg=ZoneConfiguration.new("test",:effective=>true)
     assert_equal "test", cfg.name
     assert cfg.effective
-    
-    assert_raises Switch::Error do 
-      cfg=ZoneConfiguration.new("test","switch",:effective=>true)
+    assert_raises Switch::Error do
+      zone=ZoneConfiguration.new("test-d")
     end
   end
   
@@ -36,6 +35,26 @@ class ZoneConfigurationTest < MiniTest::Unit::TestCase
           assert_equal yaml[:defined_configuration][:cfg].values[i], cfg.members
         end
       end
+    end
+  end
+  
+  def test_add_member
+    cfg=ZoneConfiguration.new("test")
+    cfg.add_member "test1"
+    assert_equal ["test1"], cfg.members
+    cfg.add_member "test2"
+    assert_equal ["test1","test2"], cfg.members
+    
+    assert_raises Switch::Error do
+      # cannot start with number 
+      cfg.add_member "3zone"
+    end
+    assert_raises Switch::Error do
+      # can contain only alphanumeric and underscore
+      cfg.add_member "zone&"
+    end
+    assert_raises Switch::Error do
+      cfg.add_member "zone-d"
     end
   end
 end

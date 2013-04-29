@@ -9,23 +9,27 @@ class ZoneConfiguration
   attr_reader :effective
   
   # init method
-  def initialize(name,switch,opts={}) # :nodoc:
-    if switch.class==Switch
-      @switch=switch
-    else
-      raise Switch::Error.new("#{switch} is not instance of SanSwitch!!!")
-    end
-    @switch=switch if switch.class==Switch
+  def initialize(name,opts={}) # :nodoc:
+    Switch::verify_name(name)
     @name=name
-    @effective=opts[:effective].nil? ? false : opts[:effective] 
+    @effective=opts[:effective].nil? ? false : opts[:effective]
+    @members=[] 
   end
   
   # returns array of members
   
   def members
-    @switch.zone_configurations(true) if @switch.configuration[:defined_configuration][:cfg][self.name].empty?
-    @switch.configuration[:defined_configuration][:cfg][self.name]
+    @members
   end
+  
+  # add member to the object
+  # members of zone configurations are zones
+  # +member+ is name of the zone
+  def add_member(member)
+    Switch::verify_name(member)
+    @members<<member
+  end
+  
 end
 
 end; end
