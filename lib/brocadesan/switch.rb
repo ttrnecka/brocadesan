@@ -5,6 +5,18 @@ require 'yaml'
 module  Brocade 
 # SAN namespace  
 module SAN
+  
+  # configuration class
+  class Configuration
+    def self.cmd_mapping_path(_class)
+      File.realpath("../config/#{_class.name.underscore}_cmd_mapping.yml",__FILE__)
+    end
+    
+    def self.parser_path
+      File.realpath("../config/parser_mapping.yml",__FILE__)
+    end
+  end
+  
   # Class to model SAN switch from Brocade
   class Switch < BrocadeSanDevice
     # Maps each method name to command to be run to obtain it and to hash key where it ill be stored
@@ -23,10 +35,10 @@ module SAN
     # Response +parsed+ hash under +:switch_name+ key.
     # At the end the +:switch_name+ key is returned from +configuration+ attribute
   
-    CMD_MAPPING=YAML.load(File.read(File.join("lib","config","#{self.name.underscore}_cmd_mapping.yml")))
+    CMD_MAPPING=YAML.load(File.read(Configuration::cmd_mapping_path(self)))
     
     # Maps each command to the parser method to use
-    PARSER_MAPPING=YAML.load(File.read(File.join("lib","config","parser_mapping.yml")))
+    PARSER_MAPPING=YAML.load(File.read(Configuration::parser_path))
     
     # zone configuration, zone and zone aliases naming rule
     # must start with an alphabetic character and may contain 
