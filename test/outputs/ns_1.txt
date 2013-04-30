@@ -1,0 +1,80 @@
+> nsshow -t
+{
+ Type Pid    COS     PortName                NodeName                 TTL(sec)
+ N    010000;      3;50:00:1f:e1:50:12:c4:e8;50:00:1f:e1:50:12:c4:e0; na
+    FC4s: FCP 
+    PortSymb: [26] "HSV210 - IDAEVA01 - CR1363"
+    Fabric Port Name: 20:00:00:05:1e:4c:24:00 
+    Permanent Port Name: 50:00:1f:e1:50:12:c4:e8
+    Device type: Physical Target
+    Port Index: 0
+    Share Area: No
+    Device Shared in Other AD: No
+    Redirect: No 
+    Partial: No
+ N    010100;      3;20:13:00:13:21:44:31:7c;20:12:00:13:21:44:31:7c; na
+    FC4s: FCP [HP      Ultrium 4-SCSI  H6AW]
+    Fabric Port Name: 20:01:00:05:1e:4c:24:00 
+    Permanent Port Name: 20:13:00:13:21:44:31:7c
+    Device type: Physical Target
+    Port Index: 1
+    Share Area: No
+    Device Shared in Other AD: No
+    Redirect: No 
+    Partial: No
+ N    010200;      3;20:01:00:13:21:44:3a:d6;20:00:00:13:21:44:3a:d6; na
+    FC4s: FCP [HP      Ultrium 4-SCSI  H6AW]
+    Fabric Port Name: 20:02:00:05:1e:4c:24:00 
+    Permanent Port Name: 20:01:00:13:21:44:3a:d6
+    Device type: Physical Target
+    Port Index: 2
+    Share Area: No
+    Device Shared in Other AD: No
+    Redirect: No 
+    Partial: No
+> nscamshow -t
+nscam show for remote switches:
+Switch entry for 2
+  state  rev    owner  cap_available
+  known   v643  0xfffc01 1
+  Device list: count 370
+    Type Pid    COS     PortName                NodeName
+    N    020000;      3;50:00:1f:e1:50:21:cf:d8;50:00:1f:e1:50:21:cf:d0;
+        FC4s: FCP 
+        PortSymb: [26] "HSV450 - IDAEVA12 - CR21F9"
+        Fabric Port Name: 20:00:00:05:33:25:16:00 
+        Permanent Port Name: 50:00:1f:e1:50:21:cf:d8
+        Device type: Physical Target
+        Port Index: 0
+        Share Area: No
+        Device Shared in Other AD: No
+        Redirect: No 
+        Partial: No
+    N    020100;      3;5b:49:9b:ab:ac:6a:20:00;2b:49:9b:ab:ac:6a:20:00;
+        FC4s: FCP 
+        PortSymb: [28] "............................"
+        Fabric Port Name: 20:01:00:05:33:25:16:00 
+        Permanent Port Name: 5b:49:9b:ab:ac:6a:20:00
+        Device type: Physical Target
+        Port Index: 1
+        Share Area: No
+        Device Shared in Other AD: No
+        Redirect: No 
+        Partial: No
+
+Switch entry for 129
+  state  rev    owner  cap_available
+  known   v643  0xfffc01 1
+  Device list: count 553
+    Type Pid    COS     PortName                NodeName
+    N    810000;      3;50:00:1f:e1:50:12:9b:cc;50:00:1f:e1:50:12:9b:c0;
+        FC4s: FCP 
+        PortSymb: [26] "HSV210 - GREEVA01 - CR1363"
+        Fabric Port Name: 20:00:00:05:1e:50:ad:00 
+        Permanent Port Name: 50:00:1f:e1:50:12:9b:cc
+        Device type: Physical Target
+        Port Index: 0
+        Share Area: No
+        Device Shared in Other AD: No
+        Redirect: No 
+        Partial: No

@@ -9,4 +9,5 @@
 :switchstatusshow: multiline
 :supportshow: multiline
 :cfgshow: cfgshow
-    
+:nsshow: ns
+:nscamshow: ns

@@ -235,6 +235,67 @@ class SwitchTest < MiniTest::Unit::TestCase
     end
   end
   
+  def test_wwns
+    @output_dir=File.join(Dir.pwd,"test","outputs")
+    read_all_starting_with "ns_" do |file,output|
+      response=Switch::Response.new
+      response.data=output
+      init_dev
+      yaml=read_yaml_for(file)
+      @device.stub :query, response do 
+        wwns=@device.wwns.map {|w| w.value}
+        yaml[:wwn_local].each do |wwn|
+          assert wwns.include?(wwn[:value]), "WWN #{wwn} is not included in #{wwns.inspect}"
+        end
+        wwns=@device.wwns(false,:cached).map {|w| w.value}
+        yaml[:wwn_remote].each do |wwn|
+          assert wwns.include?(wwn[:value]), "WWN #{wwn} is not included in #{wwns.inspect}"
+        end   
+        wwns=@device.wwns(false,:all).map {|w| w.value}
+        yaml[:wwn_local].each do |wwn|
+          assert wwns.include?(wwn[:value]), "WWN #{wwn} is not included in #{wwns.inspect}"
+        end
+        yaml[:wwn_remote].each do |wwn|
+          assert wwns.include?(wwn[:value]), "WWN #{wwn} is not included in #{wwns.inspect}"
+        end
+      end
+    end
+  end
+  
+  def test_find_wwn
+    @output_dir=File.join(Dir.pwd,"test","outputs")
+    read_all_starting_with "ns_1" do |file,output|
+      response=Switch::Response.new
+      response.data=output
+      init_dev
+      yaml=read_yaml_for(file)
+      @device.stub :query, response do 
+        
+        # test find wwn
+        yaml[:wwn_local].each do |wwn|
+          w=@device.find_wwn(wwn[:value])
+          assert_equal wwn[:value], w.value
+          
+          # test insensitive
+          w=@device.find_wwn(wwn[:value].upcase)
+          assert_equal wwn[:value], w.value
+        end
+        
+        yaml[:wwn_remote].each do |wwn|
+          w=@device.find_wwn(wwn[:value],:fabric_wide=>true)
+          assert_equal wwn[:value], w.value
+          
+          # test insensitive
+          w=@device.find_wwn(wwn[:value].upcase,:fabric_wide=>true)
+          assert_equal wwn[:value], w.value
+        end
+        
+        assert_nil @device.find_wwn("unknown")
+      end
+    end
+  end
+  
+  
   
 end
 

@@ -168,6 +168,33 @@ module SAN
       aliases
     end
     
+    # returns all WWNs
+    #
+    # mode => :local (default), :cached, :all
+    #
+    # :local - returns all local WWNs
+    #
+    # :cached - returns wwns cached from remote switches
+    #
+    # :all - returns all local and remote wwns
+    def wwns(forced=false,mode=:local)
+      if mode==:local
+        get_ns(true,forced,:local=>true)
+      elsif mode==:cached
+        get_ns(true,forced,:remote=>true)
+      else
+        get_ns(true,forced,:local=>true).concat get_ns(true,forced,:remote=>true)
+      end 
+    end
+    
+    # returns WWN of given +value+ if exists, +nil+ if not
+    #
+    # :fabric_wide => searches whole fabric
+    def find_wwn(value,opts={:fabric_wide=>false})
+      objs = opts[:fabric_wide]==true ? get_ns(true,false,:local=>true).concat(get_ns(true,false,:remote=>true)) : get_ns(true,false,:local=>true)
+      objs.find {|k| value.downcase == k.value.downcase}
+    end
+    
     private
     
     # finds configuration object by +str+. Case insensitive.
@@ -256,6 +283,27 @@ module SAN
       
       tmp_cfg
     end
+
+    def get_ns(full=false,forced=false,opts={:local=>true})
+      cmd = opts[:local] ? "nsshow -t" : "nscamshow -t"
+      key = opts[:local] ? :wwn_local : :wwn_remote
+      filter = "" #full==false ? "-e cfg: -e configuration:" : ""
+      
+      if !@loaded || !@loaded[key(cmd+filter)] || forced
+        refresh(cmd,filter)
+      end
+        
+      #storing wwns  
+      tmp_wwns=[]
+          
+      # storing defined
+      @configuration[key].each do |wwn|
+        domain_id=wwn[:domain_id]==0 ? self.domain.to_i : wwn[:domain_id]
+        w=Wwn.new(wwn[:value],wwn[:dev_type],domain_id,wwn[:port_index],:symbol=>wwn[:symbol])
+        tmp_wwns<<w
+      end
+      tmp_wwns
+    end
     
     def refresh(cmd,filter="")
       grep_exp=filter.empty? ? "" : " | grep #{filter}" 
@@ -311,6 +359,7 @@ module SAN
         @parsed[:ports].uniq! if @parsed[:ports]
         @parsed.delete(:pointer)
         @parsed.delete(:key)
+        @parsed.delete(:domain)
       end
       
       def parse_line(line)
@@ -331,8 +380,10 @@ module SAN
             parse_oneline(line)
           when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='multiline' ? k : nil }.compact.join("|")}/i)
             parse_multiline(line)
-          when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='fancy' ? k : nil }.compact.join("|")}/i)
+          when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='cfgshow' ? k : nil }.compact.join("|")}/i)
             parse_cfgshow(line)
+          when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='ns' ? k : nil }.compact.join("|")}/i)
+            parse_ns(line)
         end
       end
       
@@ -459,6 +510,37 @@ module SAN
           end
         end
         true
+      end
+      
+      def parse_ns(line)
+        @parsed[:domain]||=0
+        
+        case
+        
+        # changing domain id
+        when line.match(/Switch entry for/)
+          @parsed[:domain]=line.split(" ").last.to_i
+        
+        # new WWN
+        when line.match(/(^\s+N |^\s+U )/)
+          @parsed[:key]= @parsed[:domain]==0 ? :wwn_local : :wwn_remote
+          @parsed[@parsed[:key]]||=[]
+          @parsed[@parsed[:key]].push Hash.new
+          @parsed[@parsed[:key]].last[:value]=line.split(";")[2]
+          @parsed[@parsed[:key]].last[:domain_id]=@parsed[:domain] 
+          @parsed[@parsed[:key]].last[:symbol]||=""
+        
+        # symbol
+        when line.match(/(PortSymb|NodeSymb)/)
+          @parsed[@parsed[:key]].last[:symbol]=line.split(":")[1..-1].join(":").strip
+        
+        # detype  
+        when line.match(/(Device type)/)     
+          @parsed[@parsed[:key]].last[:dev_type]=line.split(":")[1].strip
+        when line.match(/(Port Index)/)
+          @parsed[@parsed[:key]].last[:port_index]=line.split(":")[1].strip.to_i
+        end
+        
       end
       
       def str_to_key(str)
