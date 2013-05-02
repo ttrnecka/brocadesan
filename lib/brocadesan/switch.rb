@@ -7,7 +7,7 @@ module  Brocade
 module SAN
   
   # configuration class
-  class Configuration
+  class Configuration #:nodoc:
     def self.cmd_mapping_path(_class)
       File.realpath("../config/#{_class.name.underscore}_cmd_mapping.yml",__FILE__)
     end
@@ -18,7 +18,10 @@ module SAN
   end
   
   # Class to model SAN switch from Brocade
-  class Switch < BrocadeSanDevice
+  class Switch #< BrocadeSanDevice
+    
+    include SshDevice
+    
     # Maps each method name to command to be run to obtain it and to hash key where it ill be stored
     # 
     # See lib/config/brocade/san/switch_cmd_mapping.yml for details
@@ -127,6 +130,19 @@ module SAN
       
       @configuration[CMD_MAPPING[attr.to_sym][:attr].to_sym]
     end
+    
+    # returns switches in the fabric in hash form
+    
+    def fabric(forced=false)
+      cmd="fabricshow"
+      filter = ""
+
+      if !@loaded || !@loaded[key(cmd+filter)] || forced
+        refresh(cmd,filter)
+      end
+      @configuration[:fabric]
+    end
+    
     
     # Returns all ZoneConfiguration's array
     
@@ -349,10 +365,10 @@ module SAN
   end
   
   class Switch
-    # classs extending BrocadeSanDevice::Response
+    # classs extending SshDevice::Response
      class Response < self::Response
       
-      # Wrapper around BrocadeSanDevice::Response +parse+ that
+      # Wrapper around SshDevice::Response +parse+ that
       # includes before and after hooks
       
       def parse # :nodoc:
@@ -445,9 +461,14 @@ module SAN
                               :speed=>l[4].strip, :state=>l[5].strip, :proto=>l[6].strip, :comment=>l[7..-1].join(" ")}
           when line.match(/^Index|^=/)
             ""
-          #default handling
           when line.match(/Created switches:/)
             @parsed[:created_switches]=line.split(":")[1].strip.split(" ").map {|l| l.to_i}
+          #fabrics
+          when line.match(/^\s*\d+:\s[a-f0-9]{6}/i)
+            l=line.split(" ")
+            @parsed[:fabric]||=[]
+            @parsed[:fabric] << {:domain_id => l[0].gsub(/:/,"").strip, :sid => l[1].strip, :wwn=>l[2].strip, :eth_ip=>l[3].strip, :fc_ip=>l[4].strip, :name=>l[5].strip.gsub(/\"|>/,""), :local => l[5].strip.match(/^>/) ? true : false }
+          #default handling
           else
             if line.match(/^\s*[a-z]+.*:/i)
               arr = line.split(":")
@@ -560,5 +581,10 @@ module SAN
       end
     end
   end
-
+  
+  class Switch
+    # classs extending SshDevice::Error
+     class Error < self::Error
+     end
+  end
 end; end

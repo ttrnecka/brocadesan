@@ -17,8 +17,7 @@ class SwitchTest < MiniTest::Unit::TestCase
   def test_query
     response=@device.query("test")
     assert_instance_of Switch::Response, response
-    assert_equal Switch::QUERY_PROMPT+"test\n"+Net::SSH::DATA+"\n", response.data
-    assert_equal Net::SSH::ERROR+"\n", response.errors
+    assert_equal Switch::QUERY_PROMPT+"test\n"+Net::SSH::get_data+"\n", response.data
   end
   
   def test_device_setup
@@ -295,7 +294,25 @@ class SwitchTest < MiniTest::Unit::TestCase
     end
   end
   
-  
+  def test_fabric
+    @output_dir=File.join(Dir.pwd,"test","outputs")
+    read_all_starting_with "fabricshow_" do |file,output|
+      response=Switch::Response.new
+      response.data=output
+      init_dev
+      yaml=read_yaml_for(file)
+      @device.stub :query, response do 
+        
+        assert_equal yaml[:fabric], @device.fabric
+        # clear configuration
+        @device.instance_variable_set(:@configuration,{})
+        assert_nil  @device.fabric #nil if not reloaded
+        assert_equal yaml[:fabric], @device.fabric(true) # ok if reloaded
+        
+        assert @device.instance_variable_get(:@loaded)[:fabricshow], "Should be true"
+      end
+    end
+  end
   
 end
 

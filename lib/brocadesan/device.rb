@@ -4,7 +4,7 @@ require 'net/ssh'
 #
 # It is used to extend further classes with SSH query mechanism
  
-class BrocadeSanDevice
+module SshDevice
   
   # default query prompt that will preceed each command started you +query+ in the Response +data+
   QUERY_PROMPT="> "
@@ -27,11 +27,17 @@ class BrocadeSanDevice
   # or use existing if called within session block.
   #
   # Example:
+  #   >> class Test
+  #   >>   include SshDevice
+  #   >> end
+  #   >> device = Test.new("address","user","password")
   #   >> device.query("switchname")
-  #   => #<BrocadeSanDevice::Response:0x2bb1e00 @errors="", @data="sanswitchA", @parsed={:parsing_position=>"end"}>
+  #   => #<Test::Response:0x2bb1e00 @errors="", @data="sanswitchA", @parsed={:parsing_position=>"end"}>
   #
   # 
   # Returns instance of Response or raises error if the connectionm cannot be opened
+  #
+  # Raises Error if SSH returns error. SSH error will be available in the exception message
   def query(*cmds)
     output=nil
     if @session && !@session.closed?
@@ -41,6 +47,8 @@ class BrocadeSanDevice
         output=exec(ssh,cmds)
       end
     end
+    
+    raise self.class::Error.new(output.errors) if !output.errors.empty?
     
     return output
   end
@@ -80,7 +88,7 @@ class BrocadeSanDevice
           output.data+=data
         end
       end
-      output.errors+="\n"
+      output.errors+="\n" if !output.errors.empty?
       output.data+="\n"
     end
     return output
@@ -88,7 +96,7 @@ class BrocadeSanDevice
 end
 
 
-class BrocadeSanDevice
+module SshDevice
   # This class defines the device response and it should not be manipulated directly
   # Only exception is direct usage of query method which returns instance of this class
 

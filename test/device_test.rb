@@ -4,28 +4,32 @@ require 'output_reader'
 #require 'net/ssh/test'
 
 class DeviceTest < MiniTest::Unit::TestCase
-  #include Net::SSH::Test
   def setup
-    @device = BrocadeSanDevice.new("test","test","test")
+    @device = TestDevice.new("test","test","test")
+    Net::SSH::set_error ""
   end
   
   def test_device_setup
-    assert_instance_of BrocadeSanDevice, @device
+    assert_instance_of TestDevice, @device
   end
   
   def test_query
     response=@device.query("test","test2")
-    assert_instance_of BrocadeSanDevice::Response, response
-    assert_equal BrocadeSanDevice::QUERY_PROMPT+"test\n"+Net::SSH::DATA+"\n"+BrocadeSanDevice::QUERY_PROMPT+"test2\n"+Net::SSH::DATA+"\n", response.data
-    assert_equal Net::SSH::ERROR+"\n"+Net::SSH::ERROR+"\n", response.errors
+    assert_instance_of TestDevice::Response, response
+    assert_equal TestDevice::QUERY_PROMPT+"test\n"+Net::SSH::get_data+"\n"+TestDevice::QUERY_PROMPT+"test2\n"+Net::SSH::get_data+"\n", response.data
+    
+    Net::SSH::set_error "error"
+    exp = assert_raises TestDevice::Error do 
+      @device.query("test")
+    end
+    assert_equal Net::SSH::get_error+"\n", exp.message
   end
   
   def test_query_in_session
     @device.session do 
       response=@device.query("test")
-      assert_instance_of BrocadeSanDevice::Response, response
-      assert_equal BrocadeSanDevice::QUERY_PROMPT+"test\n"+Net::SSH::DATA+"\n", response.data
-      assert_equal Net::SSH::ERROR+"\n", response.errors
+      assert_instance_of TestDevice::Response, response
+      assert_equal TestDevice::QUERY_PROMPT+"test\n"+Net::SSH::get_data+"\n", response.data
     end
   end
   
@@ -39,7 +43,7 @@ end
 
 class ResponseTest < MiniTest::Unit::TestCase
   def setup
-    @response = BrocadeSanDevice::Response.new
+    @response = TestDevice::Response.new
   end
   
   def test_parse
@@ -50,10 +54,38 @@ class ResponseTest < MiniTest::Unit::TestCase
   end
 end
 
+class TestDevice
+  include SshDevice
+end
+
 module Net::SSH
-  DATA="Response"
-  ERROR="Error"
-  CHANNEL="channel"
+  @@data="Response"
+  @@error=""
+  @@channel="channel"
+  
+  def self.get_data
+    @@data
+  end
+  
+  def self.get_error
+    @@error
+  end
+  
+  def self.get_channel
+    @@channel
+  end
+
+  def self.set_data(x)
+    @@data=x
+  end
+  
+  def self.set_error(x)
+    @@error=x
+  end
+  
+  def self.set_channel(x)
+    @@channel=x
+  end
   
   def self.start(host, user, options={}, &block)
     
@@ -66,9 +98,9 @@ module Net::SSH
   
   class Session 
     def exec!(command, &block)
-      @data=DATA
-      @error=ERROR
-      @ch=CHANNEL
+      @data=Net::SSH::get_data.dup
+      @error=Net::SSH::get_error.dup
+      @ch=Net::SSH::get_channel.dup
       
       if block
         block.call(@ch, :stdout, @data)
