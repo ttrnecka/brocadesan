@@ -3,7 +3,7 @@ require 'minitest/autorun'
 require 'output_reader'
 #require 'net/ssh/test'
 
-class DeviceTest < MiniTest::Unit::TestCase
+class DeviceTest < MiniTest::Test
   def setup
     @device = TestDevice.new("test","test","test")
     Net::SSH::set_error ""
@@ -23,6 +23,9 @@ class DeviceTest < MiniTest::Unit::TestCase
       @device.query("test")
     end
     assert_equal Net::SSH::get_error+"\n", exp.message
+    
+  ensure
+    Net::SSH::set_error ""
   end
   
   def test_query_in_session
@@ -41,7 +44,7 @@ class DeviceTest < MiniTest::Unit::TestCase
   end
 end
 
-class ResponseTest < MiniTest::Unit::TestCase
+class ResponseTest < MiniTest::Test
   def setup
     @response = TestDevice::Response.new
   end

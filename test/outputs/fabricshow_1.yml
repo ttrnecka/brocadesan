@@ -1,0 +1,34 @@
+:parsing_position: end
+:fabric:
+ -
+  :domain_id: '1'
+  :sid: 'fffc01'
+  :wwn: '10:00:00:05:1e:4c:24:00'
+  :eth_ip: 15.187.118.17
+  :fc_ip: 0.0.0.0
+  :name: IDAA1C01
+  :local: true
+ -
+  :domain_id: '2'
+  :sid: 'fffc02'
+  :wwn: '10:00:00:05:33:25:16:00'
+  :eth_ip: 15.187.118.52
+  :fc_ip: 0.0.0.0
+  :name: IDAA1C02
+  :local: false
+ -
+  :domain_id: '129'
+  :sid: 'fffc81'
+  :wwn: '10:00:00:05:1e:50:ad:00'
+  :eth_ip: 15.187.119.18
+  :fc_ip: 0.0.0.0
+  :name: GREA1C01
+  :local: false
+ -
+  :domain_id: '132'
+  :sid: 'fffc84'
+  :wwn: '10:00:00:05:33:25:12:00'
+  :eth_ip: 15.187.119.38
+  :fc_ip: 0.0.0.0
+  :name: GREA1C02
+  :local: false

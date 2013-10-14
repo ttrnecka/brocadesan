@@ -4,7 +4,7 @@ require 'output_reader'
 
 module Brocade module SAN
   
-class ZoneTest < MiniTest::Unit::TestCase
+class ZoneTest < MiniTest::Test
   include OutputReader
   def setup
     init_dev

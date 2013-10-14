@@ -4,7 +4,7 @@ require 'output_reader'
 
 module Brocade module SAN
   
-class SwitchTest < MiniTest::Unit::TestCase
+class SwitchTest < MiniTest::Test
   include OutputReader
   def setup
     init_dev
@@ -316,7 +316,7 @@ class SwitchTest < MiniTest::Unit::TestCase
   
 end
 
-class SwitchResponseTest < MiniTest::Unit::TestCase
+class SwitchResponseTest < MiniTest::Test
   include OutputReader
 
   def test_parse   

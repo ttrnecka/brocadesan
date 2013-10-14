@@ -8,4 +8,6 @@ Gem::Specification.new do |s|
   s.email       = 'trnecka@gmail.com'
   s.files       = `git ls-files`.split("\n") 
   s.homepage    = 'http://rubygems.org/gems/brocadesan'
+  s.add_runtime_dependency "net-ssh", ">= 2.2.0"
+  s.add_development_dependency "minitest",[">= 5.0.0"]
 end

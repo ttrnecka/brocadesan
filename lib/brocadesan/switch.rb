@@ -365,7 +365,7 @@ module SAN
   end
   
   class Switch
-    # classs extending SshDevice::Response
+    # class extending SshDevice::Response
      class Response < self::Response
       
       # Wrapper around SshDevice::Response +parse+ that
@@ -583,7 +583,7 @@ module SAN
   end
   
   class Switch
-    # classs extending SshDevice::Error
+    # class extending SshDevice::Error
      class Error < self::Error
      end
   end
