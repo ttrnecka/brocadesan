@@ -16,7 +16,7 @@ You can use BrocadeSAN in 2 different ways:
   switch=Brocade::SAN::Switch.new("address","user","password")
   
   switch.name
-  switch.version
+  switch.firmware
   
 === 2. Query the SAN switch in session block using 1 connection per session
   
@@ -26,7 +26,7 @@ You can use BrocadeSAN in 2 different ways:
   
   switch.session do 
 	switch.name
-	switch.version
+	switch.firmare
   end
   
 

@@ -160,78 +160,76 @@ class SwitchTest < MiniTest::Test
   end
   
   def test_find_zone_alias
-    @output_dir=File.join(Dir.pwd,"test","outputs")
-    read_all_starting_with "cfgshow_2" do |file,output|
-      response=Switch::Response.new
-      response.data=output
-      init_dev
-      yaml=read_yaml_for(file)
-      @device.stub :query, response do 
+    
+    response=Switch::Response.new
+    response.data="> configshow |grep -i -E zone.VAL_lis9swep01_m1p1_IEVA16:\nzone.VAL_lis9swep01_m1p1_IEVA16:ieva16_A1_ho;ieva16_B1_ho;ida16R24c7_bay12_m1p1"
+    init_dev
+
+    @device.stub :query, response do 
+      z=@device.find_zone("VAL_lis9swep01_m1p1_IEVA16")
+      assert_equal "VAL_lis9swep01_m1p1_IEVA16", z[0].name
+      assert_equal ["ieva16_A1_ho","ieva16_B1_ho","ida16R24c7_bay12_m1p1"], z[0].members
+    end          
+    
+    response.data="> configshow |grep -i -E zone.unknown:"
         
-        # test find zones
-        yaml[:defined_configuration][:zone].each do |zone, members|
-          z=@device.find_zone(zone)
-          assert_equal zone, z.name
-          assert_equal yaml[:defined_configuration][:zone][zone], z.members
-          
-          # test insensitive
-          z=@device.find_zone(zone.upcase)
-          assert_equal zone, z.name
-        end
+    @device.stub :query, response do 
+      z=@device.find_zone("unknown")
+      assert_equal [], z
+    end         
+    
+    # test find aliases
+
+    response.data="> configshow |grep -i -E ^alias.ivls01n0_1:\nalias.ivls01n0_1:50:02:26:40:8F:DC:20:00"
+
+    @device.stub :query, response do 
+      a=@device.find_alias("ivls01n0_1")
+      assert_equal "ivls01n0_1", a[0].name
+      assert_equal ["50:02:26:40:8F:DC:20:00"], a[0].members
+    end          
+    
+    response.data="> configshow |grep -i -E ^alias.unknown:"
         
-        assert_nil @device.find_zone("unknown")
-        
-        # test find aliases
-        yaml[:defined_configuration][:alias].each do |al, members|
-          a=@device.find_alias(al)
-          assert_equal al, a.name
-          assert_equal yaml[:defined_configuration][:alias][al], a.members
-          
-          # test insensitive
-          a=@device.find_alias(al.upcase)
-          assert_equal al, a.name
-        end
-        
-        assert_nil @device.find_alias("unknown")
-        
-      end
-    end
+    @device.stub :query, response do 
+      a=@device.find_alias("unknown")
+      assert_equal [], a
+    end 
   end
   
   
   def test_find_zones_aliases
-    @output_dir=File.join(Dir.pwd,"test","outputs")
-    read_all_starting_with "cfgshow_2" do |file,output|
-      response=Switch::Response.new
-      response.data=output
-      init_dev
-      yaml=read_yaml_for(file)
-      @device.stub :query, response do 
+    
+    response=Switch::Response.new
+    response.data="> configshow |grep -i -E ^zone.VAL_lis9swep01_m1p1\nzone.VAL_lis9swep01_m1p1_IEVA16:ieva16_A1_ho;ieva16_B1_ho;ida16R24c7_bay12_m1p1\nzone.VAL_lis9swep01_m1p1_IVLS01:ivls01n2_1;ivls01n3_1;ida16R24c7_bay12_m1p1"
+    init_dev
+
+    @device.stub :query, response do 
+      z=@device.find_zones("VAL_lis9swep01_m1p1")
+      assert_equal ["VAL_lis9swep01_m1p1_IEVA16","VAL_lis9swep01_m1p1_IVLS01"], z.map {|zone| zone.name }
+      assert_equal [["ieva16_A1_ho","ieva16_B1_ho","ida16R24c7_bay12_m1p1"],["ivls01n2_1","ivls01n3_1","ida16R24c7_bay12_m1p1"]], z.map {|zone| zone.members }
+    end          
+    
+    response.data="> configshow |grep -i -E zone.unknown:"
         
-        # test find zones
+    @device.stub :query, response do 
+      z=@device.find_zones("unknown")
+      assert_equal [], z
+    end      
+    
+    response.data="> configshow |grep -i -E ^alias.ivls01n\nalias.ivls01n0_1:50:02:26:40:8F:DC:20:00\nalias.ivls01n1_1:50:02:26:40:8F:DC:20:01\nalias.ivls01n2_1:50:02:26:40:8F:DC:20:02\nalias.ivls01n3_1:50:02:26:40:8F:DC:20:03\nalias.ivls01n4_1:50:02:26:40:8F:DC:20:04\nalias.ivls01n5_1:50:02:26:40:8F:DC:20:05"
+    
+    @device.stub :query, response do 
+      a=@device.find_aliases("ivls01n")
+      assert_equal ["ivls01n0_1","ivls01n1_1","ivls01n2_1","ivls01n3_1","ivls01n4_1","ivls01n5_1"], a.map {|al| al.name }
+      assert_equal [["50:02:26:40:8F:DC:20:00"],["50:02:26:40:8F:DC:20:01"],["50:02:26:40:8F:DC:20:02"],["50:02:26:40:8F:DC:20:03"],["50:02:26:40:8F:DC:20:04"],["50:02:26:40:8F:DC:20:05"]], a.map {|al| al.members }
+    end          
+    
+    response.data="> configshow |grep -i -E alias.unknown:"
         
-        z=@device.find_zones('zone')
-        assert_equal yaml[:defined_configuration][:zone].keys.find_all {|k| k.match(/zone/i)}, z.map {|zone| zone.name}
-          
-        # test insensitive
-        z=@device.find_zones('zone'.upcase)
-        assert_equal yaml[:defined_configuration][:zone].keys.find_all {|k| k.match(/zone/i)}, z.map {|zone| zone.name}
-        
-        assert_empty @device.find_zones("unknown")
-        
-        # test find aliases
-        
-        a=@device.find_aliases('alias')
-        assert_equal yaml[:defined_configuration][:alias].keys.find_all {|k| k.match(/alias/i)}, a.map {|a| a.name}
-          
-        # test insensitive
-        a=@device.find_aliases('alias'.upcase)
-        assert_equal yaml[:defined_configuration][:alias].keys.find_all {|k| k.match(/alias/i)}, a.map {|a| a.name}
-        
-        assert_empty @device.find_aliases("unknown")
-        
-      end
-    end
+    @device.stub :query, response do 
+      a=@device.find_aliases("unknown")
+      assert_equal [], a
+    end      
   end
   
   def test_wwns

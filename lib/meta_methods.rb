@@ -98,6 +98,7 @@ class Brocade::SAN::Switch
 ##
 # :method: logical_switches
 # If called with +true+ argument it will get the created_switches from the switch instead of cache
+# created_switches contains list of all FIDs in the switch
 #
 # Returns value in (string) format
 

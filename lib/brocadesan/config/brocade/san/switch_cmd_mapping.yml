@@ -47,7 +47,7 @@
     :cmd: "fosconfig --show"
     :attr: virtual_fabric
 :logical_switches:
-    :cmd: "lsconfig --show"
+    :cmd: "lscfg --show"
     :attr: created_switches
 :ports:
     :cmd: "switchshow"

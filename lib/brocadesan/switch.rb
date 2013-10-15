@@ -170,28 +170,28 @@ module SAN
     
     # returns Zone with name of +str+ if exists, +nil+ otherwise
     def find_zone(str)
-      zone = find(str,:object=>:zones)
+      zone = find(str,:object=>:zone)
     end
     
     # returns Zone array of Zones with name matching +regexp+ if exists, [] otherwise
     #
     # find is case insesitive
     def find_zones(regexp)
-      zones = find(regexp,:object=>:zones,:find_mode=>:partial)
+      zones = find(regexp,:object=>:zone,:find_mode=>:partial)
       return [] if zones==[nil]
       zones
     end
     
     # returns Alias with name of +str+ if exists, +nil+ otherwise
     def find_alias(str)
-      al = find(str,:object=>:aliases)
+      al = find(str,:object=>:alias)
     end
     
     # returns Alias array of Aliases with name matching +regexp+ if exists, [] otherwise
     #
     # find is case insesitive
     def find_aliases(regexp)
-      aliases = find(regexp,:object=>:aliases,:find_mode=>:partial)
+      aliases = find(regexp,:object=>:alias,:find_mode=>:partial)
       return [] if aliases==[nil]
       aliases
     end
@@ -223,32 +223,40 @@ module SAN
       objs.find {|k| value.downcase == k.value.downcase}
     end
     
-    private
-    
     # finds configuration object by +str+. Case insensitive.
-    # If not object type is specified it searches :zones. 
+    # If not object type is specified it searches :zone. 
     #
-    # :object => :zones (default), :aliases, :zone_configurations
+    # :object => :zones (default), :aliases
     # :find_mode => :partial, :full(default)
     #
     # Example:
     #
     # switch.find("zone1",:object=>:zone)
     def find(str,opts={})
-      obj = !opts[:object].nil? && [:zones,:aliases,:zone_configurations].include?(opts[:object]) ? opts[:object] : :zones
+      obj = !opts[:object].nil? && [:zone,:alias].include?(opts[:object]) ? opts[:object] : :zone
       mode = !opts[:find_mode].nil? && [:partial].include?(opts[:find_mode]) ? opts[:find_mode] : :full
+      grep_exp = mode==:full ? " | grep -i -E ^#{obj}\..*#{str}:" : " | grep -i -E ^#{obj}\..*#{str}"  
       
-      objs=get_configshow(true)[obj]
+      response=query(fullcmd("configshow")+grep_exp)
+      response.parse
       
-      if mode==:full
-        key=objs.find {|k| str.downcase == k.name.downcase}
-        return nil if key.nil?
-        return key
-      else
-        keys=objs.find_all {|k| k.name.match(/#{str}/i)}
-        return keys
+      #objs=get_configshow(true)[obj]
+      objs=response.parsed[:find_results]
+      objs||=[]
+      
+      result=[]
+      
+      objs.each do |item|
+         i = obj==:zone ? Zone.new(item[:obj]) : Alias.new(item[:obj]) 
+         item[:members].split(";").each do |member|
+           i.add_member(member)
+         end
+         result<<i
       end
+      result
     end
+    
+    private
     
     def get_configshow(full=false,forced=false)
       cmd="cfgshow"
@@ -381,6 +389,7 @@ module SAN
       
       def before_parse
         reset
+        @parsed[:find_results]=[]
       end
       
       def after_parse
@@ -388,6 +397,7 @@ module SAN
         @parsed.delete(:pointer)
         @parsed.delete(:key)
         @parsed.delete(:domain)
+        @parsed.delete(:find_results) if @parsed[:find_results].empty?
       end
       
       def parse_line(line)
@@ -468,6 +478,9 @@ module SAN
             l=line.split(" ")
             @parsed[:fabric]||=[]
             @parsed[:fabric] << {:domain_id => l[0].gsub(/:/,"").strip, :sid => l[1].strip, :wwn=>l[2].strip, :eth_ip=>l[3].strip, :fc_ip=>l[4].strip, :name=>l[5].strip.gsub(/\"|>/,""), :local => l[5].strip.match(/^>/) ? true : false }
+          when line.match(/^(zone|alias)\./)
+            l=line.gsub!(/^(zone|alias)\./,"").split(":")
+            @parsed[:find_results] << {:obj=>l.shift,:members=>l.join(":")}
           #default handling
           else
             if line.match(/^\s*[a-z]+.*:/i)
