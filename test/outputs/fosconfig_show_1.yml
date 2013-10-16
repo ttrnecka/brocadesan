@@ -1,8 +1,0 @@
-:fc_routing_service:             disabled
-:i_scsi_service:                  Service not supported on this Platform
-:i_sns_client_service:            Service not supported on this Platform
-:virtual_fabric:                 enabled
-:ethernet_switch_service:        disabled
-
-
-:parsing_position: end

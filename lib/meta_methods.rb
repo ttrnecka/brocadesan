@@ -90,12 +90,6 @@ class Brocade::SAN::Switch
 # Returns value in (string) format
 
 ##
-# :method: vf
-# If called with +true+ argument it will get the virtual_fabric from the switch instead of cache
-#
-# Returns value in (string) format
-
-##
 # :method: logical_switches
 # If called with +true+ argument it will get the created_switches from the switch instead of cache
 # created_switches contains list of all FIDs in the switch

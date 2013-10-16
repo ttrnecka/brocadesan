@@ -40,6 +40,7 @@ class SwitchTest < MiniTest::Test
       response=Switch::Response.new
       response.data=output
       yaml=read_yaml_for(file)
+           
       @device.stub :query, response do 
         assert_equal yaml[:switch_name], @device.get(:name)        
         # clear configuration
@@ -55,13 +56,30 @@ class SwitchTest < MiniTest::Test
     end
   end
   
+  def test_vf
+    response=Switch::Response.new
+    response.data="> switchshow |grep \"^LS Attributes\"\n"
+    @device.stub :query, response do 
+      assert_equal "disabled", @device.vf(true)        
+    end
+    
+    response.data="> switchshow |grep \"^LS Attributes\"\nLS Attributes:  [FID: 128, Base Switch: No, Default Switch: Yes, Address Mode 0]\n"
+    
+    @device.stub :query, response do 
+      # running it without force should still show the same
+      assert_equal "disabled", @device.vf        
+      
+      assert_equal "enabled", @device.vf(true)
+    end
+  end
+  
   def test_get_with_vf
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "vf_switch" do |file,output|
       init_dev
       response=Switch::Response.new
       response.data=output
-      @device.configuration[:virtual_fabric]="enabled"
+      @device.configuration[:vf]="enabled"
       @device.set_context 99
         
       @device.stub :query, response do 
@@ -102,7 +120,7 @@ class SwitchTest < MiniTest::Test
     assert_equal "test", @device.send(:fullcmd,"test")
     
     #vf enabled but no fid
-    @device.configuration[:virtual_fabric]="enabled"
+    @device.configuration[:vf]="enabled"
     assert_equal "test", @device.send(:fullcmd,"test")
     
     #vf enabled and fid given
@@ -279,11 +297,11 @@ class SwitchTest < MiniTest::Test
         end
         
         yaml[:wwn_remote].each do |wwn|
-          w=@device.find_wwn(wwn[:value],:fabric_wide=>true)
+          w=@device.find_wwn(wwn[:value],true,:fabric_wide=>true)
           assert_equal wwn[:value], w.value
           
           # test insensitive
-          w=@device.find_wwn(wwn[:value].upcase,:fabric_wide=>true)
+          w=@device.find_wwn(wwn[:value].upcase,true,:fabric_wide=>true)
           assert_equal wwn[:value], w.value
         end
         

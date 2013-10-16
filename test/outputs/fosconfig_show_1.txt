@@ -1,6 +1,0 @@
-> fosconfig --show
-FC Routing service:             disabled
-iSCSI service:                  Service not supported on this Platform
-iSNS client service:            Service not supported on this Platform
-Virtual Fabric:                 enabled
-Ethernet Switch Service:        disabled

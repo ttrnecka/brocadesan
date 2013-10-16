@@ -43,9 +43,6 @@
 :firmware: 
     :cmd: version
     :attr: fabric_os
-:vf: 
-    :cmd: "fosconfig --show"
-    :attr: virtual_fabric
 :logical_switches:
     :cmd: "lscfg --show"
     :attr: created_switches

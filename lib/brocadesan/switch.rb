@@ -65,7 +65,7 @@ module SAN
       raise Switch::Error.new("Incorrect name format \"#{name}\"") if !name.match(/#{NAME_RULE}/i)
     end
     
-    # Creates a SanSwitch instance and tests a connection.
+    # Creates a Switch instance and tests a connection.
     #
     # Checks as well if the switch is virtual fabric enabled since that defines the way it will be queried further.
     def initialize(*params)
@@ -143,6 +143,17 @@ module SAN
       @configuration[:fabric]
     end
     
+    # If called with +true+ argument it will get the virtual_fabric from the switch instead of cache
+    #
+    # Returns value in (string) format
+    
+    def vf(forced=false)
+      if !@configuration[:vf] || forced
+        response=query("switchshow|grep \"^LS Attributes\"")
+        @configuration[:vf] = response.data.split("\n").size == 2 ? "enabled" : "disabled"
+      end
+      @configuration[:vf]
+    end
     
     # Returns all ZoneConfiguration's array
     
@@ -217,9 +228,11 @@ module SAN
     
     # returns WWN of given +value+ if exists, +nil+ if not
     #
+    # if +forced+ is true it will load the data from switch instead of the cache 
+    #
     # :fabric_wide => searches whole fabric
-    def find_wwn(value,opts={:fabric_wide=>false})
-      objs = opts[:fabric_wide]==true ? get_ns(true,false,:local=>true).concat(get_ns(true,false,:remote=>true)) : get_ns(true,false,:local=>true)
+    def find_wwn(value,forced=true,opts={:fabric_wide=>false})
+      objs = opts[:fabric_wide]==true ? get_ns(true,forced,:local=>true).concat(get_ns(true,forced,:remote=>true)) : get_ns(true,forced,:local=>true)
       objs.find {|k| value.downcase == k.value.downcase}
     end
     
@@ -237,7 +250,7 @@ module SAN
       mode = !opts[:find_mode].nil? && [:partial].include?(opts[:find_mode]) ? opts[:find_mode] : :full
       grep_exp = mode==:full ? " | grep -i -E ^#{obj}\..*#{str}:" : " | grep -i -E ^#{obj}\..*#{str}"  
       
-      response=query(fullcmd("configshow")+grep_exp)
+      response=query("configshow"+grep_exp)
       response.parse
       
       #objs=get_configshow(true)[obj]
@@ -254,6 +267,11 @@ module SAN
          result<<i
       end
       result
+    end
+    
+    def query(*cmds) #:nodoc
+      cmds.map! {|cmd| fullcmd(cmd)}
+      super(*cmds)
     end
     
     private
@@ -343,7 +361,7 @@ module SAN
     
     def refresh(cmd,filter="")
       grep_exp=filter.empty? ? "" : " | grep #{filter}" 
-      response=query(fullcmd(cmd)+grep_exp)
+      response=query(cmd+grep_exp)
       response.parse
       
       #puts response.data
@@ -364,7 +382,7 @@ module SAN
     end
     
     def fullcmd(cmd)
-      if @configuration[CMD_MAPPING[:vf][:attr].to_sym]=="enabled" && @fid 
+      if @configuration[:vf]=="enabled" && @fid 
         "fosexec --fid #{@fid} \'#{cmd}\'"
       else
         cmd
