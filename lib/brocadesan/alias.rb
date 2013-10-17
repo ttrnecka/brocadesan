@@ -39,6 +39,7 @@ class Alias
   # add member to the object
   # members of aliasese are WWNs or Domain,Index port notation
   # +member+ is name of the zone
+  # return all memebers, otherwises raises error
   
   def add_member(member)
     Alias::verify_name(member)

@@ -13,6 +13,25 @@ class DeviceTest < MiniTest::Test
     assert_instance_of TestDevice, @device
   end
   
+  def test_get_mode
+    @device.instance_variable_set(:@opts,{:interactive=>true})
+    assert_equal "interactive", @device.get_mode
+    
+    @device = TestDevice.new("test","test","test", :interactive=>true)
+    assert_equal "interactive", @device.get_mode
+    
+    @device.set_mode("script")
+    assert_equal "script", @device.get_mode
+  end
+  
+  def test_set_mode
+    assert_equal "interactive", @device.set_mode("interactive")
+    
+    assert_equal "script", @device.set_mode("script")
+    
+    assert_equal "script", @device.set_mode("blabla")
+  end
+  
   def test_query
     response=@device.query("test","test2")
     assert_instance_of TestDevice::Response, response

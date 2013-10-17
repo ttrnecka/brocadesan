@@ -14,6 +14,12 @@ module Provisioning
       agent=self.new(*params)
     end
     
+    # Adds alias to config and saves it
+    #
+    # +al+ must be of class Alias. It will be created as it is with all the members
+    #
+    # raises error if alias exists or transaction is running or response is unexpected
+    
     def alias_add(al)
       raise Agent::Error.new(Agent::Error::ALIAS_BAD) if !al.kind_of? Alias
       self.session do 
@@ -21,7 +27,7 @@ module Provisioning
         raise Agent::Error.new(Agent::Error::TRNS_IPRG) if check_for_running_transaction
         
         response=query("alicreate \"#{al.name}\",\"#{al.members.join("; ")}\"")
-        
+
         #empty response is ok
         if response.data.split("\n").size==1
           cfg_save
@@ -33,9 +39,24 @@ module Provisioning
       true
     end
     
-    # saves config
+    # Saves config
+    # Raises erros if cancelled, nothing saved or unexpected result, otherwise returns true
     def cfg_save
-      #require interactive query
+      set_mode("interactive")
+      
+      response = query("cfgsave","y")
+      case
+      when response.data.match(/Operation cancelled/)
+        raise Agent::Error.new(Agent::Error::CFGSAVE_CANC)
+      when response.data.match(/Nothing changed: nothing to save, returning/)
+        raise Agent::Error.new(Agent::Error::CFGSAVE_NOCHANGE)
+      when response.data.match(/Updating flash/)    
+        return true
+      else
+        raise Agent::Error.new(response.data)
+      end
+    ensure
+      set_mode("script")
     end    
     
     # Check if there is zoning transaction in progress
@@ -68,6 +89,8 @@ module Provisioning
        TRNS_IPRG = "Another zoning transaction is already in progress"
        ALIAS_BAD = "Parameter should be of Alias class"
        ALIAS_EXISTS = "Cannot create alias because it already exists"
+       CFGSAVE_CANC = "cfgsave was cancelled"
+       CFGSAVE_NOCHANGE = "cfgsave: nothing changed, nothing to save"
      end
   end
 end; end; end

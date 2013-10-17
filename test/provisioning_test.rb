@@ -90,6 +90,35 @@ class ProvisioningTest < MiniTest::Test
         end
       end
     end
+  end
+  
+  def test_cfgsave
+    # should raise error if cancelled
+    @response.data="> cfgsave\nOperation cancelled...\n"
+    @agent.stub :query, @response do
+      exp = assert_raises Provisioning::Agent::Error do    
+        @agent.cfg_save
+      end
+      assert_equal Provisioning::Agent::Error::CFGSAVE_CANC, exp.message
+      assert_equal 'script', @agent.get_mode
+    end
+    
+    # should raise error nothing changed
+    @response.data="> cfgsave\nNothing changed: nothing to save, returning ...\n"
+    @agent.stub :query, @response do
+      exp = assert_raises Provisioning::Agent::Error do    
+        @agent.cfg_save
+      end
+      assert_equal Provisioning::Agent::Error::CFGSAVE_NOCHANGE, exp.message
+      assert_equal 'script', @agent.get_mode
+    end
+    
+    # should return true if saved
+    @response.data="> cfgsave\nUpdating flash ...\n"
+    @agent.stub :query, @response do
+      assert_equal true, @agent.cfg_save
+      assert_equal 'script', @agent.get_mode
+    end
     
   end
   
