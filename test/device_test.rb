@@ -58,6 +58,12 @@ class DeviceTest < MiniTest::Test
   def test_session
     @device.session do 
       assert_instance_of Net::SSH::Session, @device.instance_variable_get(:@session)
+      assert_equal 1, @device.instance_variable_get(:@session_level)
+      @device.session do
+        assert_equal 2, @device.instance_variable_get(:@session_level)
+      end
+      refute @device.instance_variable_get(:@session).closed?
+      assert_equal 1, @device.instance_variable_get(:@session_level)
     end
     assert @device.instance_variable_get(:@session).closed?
   end

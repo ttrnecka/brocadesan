@@ -20,6 +20,7 @@ module SshDevice
       @password=password
       @opts=opts
       @session=nil
+      @session_level=0
   end
   
   # get current query mode
@@ -80,6 +81,8 @@ module SshDevice
   # All queries within the session use the same connection. This speeds up the query processing.
   # 
   # The connection is closed at the end of the block
+  # 
+  # The command supports session blocks within session blocks. Session will be closed only at the last block
   #
   # Example:
   #   device.session do 
@@ -89,11 +92,15 @@ module SshDevice
   # 
   # 
   def session
-    @session=Net::SSH.start @address, @user, :password=>@password
+    @session_level+=1
+    if @session_level == 1
+      @session=Net::SSH.start @address, @user, :password=>@password
+    end 
     yield
     
   ensure
-    @session.close if @session
+    @session_level-=1
+    @session.close if @session && @session_level==0
   end
   
   private
