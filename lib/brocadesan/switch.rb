@@ -237,7 +237,7 @@ module SAN
     end
     
     # finds configuration object by +str+. Case insensitive.
-    # If not object type is specified it searches :zone. 
+    # If not object type is specified it searches :zone. Find only saved objects. If the object was created but the transaction is not confirmed it will not find it.
     #
     # :object => :zones (default), :aliases
     # :find_mode => :partial, :full(default)

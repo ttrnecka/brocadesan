@@ -12,7 +12,7 @@ class ZoneConfiguration
   def initialize(name,opts={}) # :nodoc:
     Switch::verify_name(name)
     @name=name
-    @effective=opts[:effective].nil? ? false : opts[:effective]
+    @effective=opts[:effective].nil? ? false : true
     @members=[] 
   end
   
