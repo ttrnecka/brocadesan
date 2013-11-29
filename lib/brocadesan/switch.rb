@@ -382,8 +382,13 @@ module SAN
     end
     
     def fullcmd(cmd)
-      if @configuration[:vf]=="enabled" && @fid 
-        "fosexec --fid #{@fid} \'#{cmd}\'"
+      if @configuration[:vf]=="enabled" && @fid
+        cmds = cmd.split("|") 
+        if cmds.size>1
+          "fosexec --fid #{@fid} \'#{cmds.shift}\' |#{cmds.join("|")}"
+        else
+          "fosexec --fid #{@fid} \'#{cmds.shift}\'"
+        end
       else
         cmd
       end
