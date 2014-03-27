@@ -298,7 +298,7 @@ module Provisioning
       return false if @transaction
       
       response=query("cfgtransshow")
-      response.data.match(/There is no outstanding zoning transactions/) ? false : true
+      response.data.match(/There is no outstanding zoning transaction/) ? false : true
     end
     
     # aborts transaction

@@ -76,6 +76,12 @@ class ProvisioningTest < MiniTest::Test
   end
   
   def test_check_transaction
+    @response.data="> cfgtransshow\nThere is no outstanding zoning transaction\n"
+    @agent.stub :query, @response do 
+      assert_equal false, @agent.check_for_running_transaction
+    end
+    
+    # old version response
     @response.data="> cfgtransshow\nThere is no outstanding zoning transactions\n"
     @agent.stub :query, @response do 
       assert_equal false, @agent.check_for_running_transaction
