@@ -1,0 +1,12 @@
+:defined_configuration:
+ :cfg:
+  atc2b1c:
+    - AIS_A3parp01_3par01_G8
+    - AIS_abfmp01_eva01
+  atc2b1c_2014_01_29_1136: []
+  atc2b1c_Jan3rd_2014: []
+  atc2b1c_Nov6th_2013: []
+:effective_configuration:
+ :cfg:
+  atc2b1c: []
+:parsing_position: end

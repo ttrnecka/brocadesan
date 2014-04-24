@@ -418,8 +418,10 @@ module SAN
       def after_parse
         @parsed[:ports].uniq! if @parsed[:ports]
         @parsed.delete(:pointer)
+        @parsed.delete(:last_key)
         @parsed.delete(:key)
         @parsed.delete(:domain)
+        @parsed.delete(:was_popped)
         @parsed.delete(:find_results) if @parsed[:find_results].empty?
       end
       
@@ -520,6 +522,8 @@ module SAN
         # we use array stack to point to the object being parsed
         @parsed[:pointer]||=[]
         @parsed[:key]||=[]
+        @parsed[:last_key]||=nil
+        @parsed[:was_popped]||=false
         
         if (matches=line.match(/^\s*([a-z]+\s*[a-z]+):(.*)/i))
           key=str_to_key(matches[1]) 
@@ -534,6 +538,12 @@ module SAN
             @parsed[:pointer].push @parsed[key]
           # subkey
           else
+            # sometimes the previous key does not have any members (or  they are filtered out)
+            # in that case the key and pointer were not poped below so we pop them now
+            if @parsed[:last_key]==key && !@parsed[:was_popped]
+              @parsed[:pointer].pop
+              @parsed[:key].pop
+            end
             # we define the last subkey as hash
             # and push the array to pointer stack
             @parsed[:pointer].last[key]||={}
@@ -560,11 +570,18 @@ module SAN
               if !line.strip.match(/;$/)
                 @parsed[:pointer].pop
                 @parsed[:key].pop 
+                @parsed[:was_popped]=true
+              else
+                @parsed[:was_popped]=false
               end
+            else
+              @parsed[:was_popped]=false
             end
           end
+          @parsed[:last_key]=key
         # this line defines another members of last pointer key array item
         elsif line.match(/^\t/)
+          @parsed[:last_key]=nil
           # sometimes it is not defined yet
           # we push the members in
           @parsed[:pointer].last[@parsed[:key].last]||=[]
@@ -576,6 +593,9 @@ module SAN
           if !line.strip.match(/;$/)
             @parsed[:pointer].pop
             @parsed[:key].pop
+            @parsed[:was_popped]=true
+          else
+            @parsed[:was_popped]=false
           end
         end
         true
