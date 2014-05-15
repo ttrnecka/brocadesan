@@ -1,0 +1,21 @@
+:parsing_position: end
+:wwn_local:
+ - 
+  :value: 50:00:1f:e1:50:12:c4:e8
+  :domain_id: 0
+  :symbol: '[26] "HSV210 - IDAEVA01 - CR1363"'
+  :dev_type: 'Physical Target'
+  :port_index: 0 
+ -
+  :value: 20:13:00:13:21:44:31:7c
+  :domain_id: 0
+  :symbol: ''
+  :dev_type: 'Physical Target'
+  :port_index: 1 
+ -
+  :value: 20:01:00:13:21:44:3a:d6
+  :domain_id: 0  
+  :symbol: ''
+  :dev_type: 'Physical Target'
+  :port_index: 2
+:wwn_remote: [] 

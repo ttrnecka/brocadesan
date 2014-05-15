@@ -349,13 +349,14 @@ module SAN
         
       #storing wwns  
       tmp_wwns=[]
-          
+       
       # storing defined
       @configuration[key].each do |wwn|
         domain_id=wwn[:domain_id]==0 ? self.domain.to_i : wwn[:domain_id]
         w=Wwn.new(wwn[:value],wwn[:dev_type],domain_id,wwn[:port_index],:symbol=>wwn[:symbol])
         tmp_wwns<<w
       end
+      
       tmp_wwns
     end
     
@@ -603,6 +604,8 @@ module SAN
       
       def parse_ns(line)
         @parsed[:domain]||=0
+        @parsed[:key] = @parsed[:parsing_position]=="nsshow" ? :wwn_local : :wwn_remote
+        @parsed[@parsed[:key]]||=[]
         
         case
         
@@ -612,8 +615,6 @@ module SAN
         
         # new WWN
         when line.match(/(^\s+N |^\s+U )/)
-          @parsed[:key]= @parsed[:domain]==0 ? :wwn_local : :wwn_remote
-          @parsed[@parsed[:key]]||=[]
           @parsed[@parsed[:key]].push Hash.new
           @parsed[@parsed[:key]].last[:value]=line.split(";")[2]
           @parsed[@parsed[:key]].last[:domain_id]=@parsed[:domain] 
