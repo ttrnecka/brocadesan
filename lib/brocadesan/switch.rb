@@ -433,6 +433,15 @@ module SAN
           when line.match(/^#{Switch::QUERY_PROMPT}/) then line.gsub(/(fosexec --fid \d+ \')|\'$|\' \|.*$/,"").split(" ")[1]
           else @parsed[:parsing_position]
         end
+        #some default processing
+        if line.match(/^#{Switch::QUERY_PROMPT}/)
+          case @parsed[:parsing_position]
+          when "islshow"
+            @parsed[:isl_links]||=[]
+          when "trunkshow"
+            @parsed[:trunk_links]||=[]
+          end
+        end
         #do not process if we are on query line
         return if line.match(/^#{Switch::QUERY_PROMPT}/)
   
@@ -656,6 +665,7 @@ module SAN
       end
       
       def parse_trunk(line)
+        return if line.match(/No trunking/i)
         @parsed[:trunk_links]||=[]
         l_tricky, l_simple = line.split("->")
         l_t = l_tricky.split(":")
