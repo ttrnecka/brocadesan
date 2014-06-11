@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'brocadesan'
-  s.version     = '0.3.6'
+  s.version     = '0.3.7'
   s.date        = '2014-06-11'
   s.summary     = "Brocade SAN library"
   s.description = "Gem to manipulate FABOS based devices"

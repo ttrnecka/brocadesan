@@ -77,5 +77,5 @@
     :cmd: "islshow"
     :attr: isl_links
 :trunks:
-    :cmd: "trunksshow"
+    :cmd: "trunkshow"
     :attr: trunk_links
