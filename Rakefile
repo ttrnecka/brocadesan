@@ -20,7 +20,7 @@ require 'yaml'
   end
   
   task :generate_meta do
-    files=Dir.glob("lib/config/brocade/san/*cmd_mapping.yml")
+    files=Dir.glob("lib/brocadesan/config/brocade/san/*cmd_mapping.yml")
     doc=""
     files.each do |file|
       doc+="class Brocade::SAN::#{File.basename(file.gsub("_cmd_mapping.yml","")).split('_').map{|e| e.capitalize}.join}\n"

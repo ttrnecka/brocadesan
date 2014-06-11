@@ -1,0 +1,62 @@
+:parsing_position: end
+:isl_links:
+ - 
+  :id: 1
+  :source_port_index: 0
+  :destination_port_index: 0
+  :destination_switch_wwn: 10:00:00:05:33:23:86:00
+  :destination_switch_domain: 1
+  :destination_switch_name: H2C04R065-U03-A
+  :speed: 8
+  :bandwidth: 64
+  :trunk: true
+  :qos: true
+  :cr_recov: false
+ - 
+  :id: 2
+  :source_port_index: 8
+  :destination_port_index: 17
+  :destination_switch_wwn: 10:00:00:05:33:c6:f7:23
+  :destination_switch_domain: 29
+  :destination_switch_name: H4C11R218-U02-I
+  :speed: 8
+  :bandwidth: 8
+  :trunk: false
+  :qos: false
+  :cr_recov: false
+ - 
+  :id: 17
+  :source_port_index: 32
+  :destination_port_index: 64
+  :destination_switch_wwn: 10:00:00:27:f8:34:f7:00
+  :destination_switch_domain: 41
+  :destination_switch_name: DXS-898-U03-A01
+  :speed: 4
+  :bandwidth: 4
+  :trunk: false
+  :qos: false
+  :cr_recov: true
+ - 
+  :id: 18
+  :source_port_index: 18
+  :destination_port_index: 176
+  :destination_switch_wwn: 10:00:00:05:33:9b:d2:00
+  :destination_switch_domain: 2
+  :destination_switch_name: H4C11R215-U03-A
+  :speed: 8
+  :bandwidth: 8
+  :trunk: false
+  :qos: false
+  :cr_recov: false
+ - 
+  :id: 38
+  :source_port_index: 217
+  :destination_port_index: 18
+  :destination_switch_wwn: 10:00:00:05:33:bd:13:a7
+  :destination_switch_domain: 24
+  :destination_switch_name: H2C04R085-U25-I
+  :speed: 8
+  :bandwidth: 8
+  :trunk: false
+  :qos: false
+  :cr_recov: false

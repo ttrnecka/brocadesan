@@ -92,7 +92,6 @@ class Brocade::SAN::Switch
 ##
 # :method: logical_switches
 # If called with +true+ argument it will get the created_switches from the switch instead of cache
-# created_switches contains list of all FIDs in the switch
 #
 # Returns value in (string) format
 
@@ -147,6 +146,18 @@ class Brocade::SAN::Switch
 ##
 # :method: supportshow
 # If called with +true+ argument it will get the supportshow from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: isls
+# If called with +true+ argument it will get the isl_links from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: trunks
+# If called with +true+ argument it will get the trunk_links from the switch instead of cache
 #
 # Returns value in (string) format
 

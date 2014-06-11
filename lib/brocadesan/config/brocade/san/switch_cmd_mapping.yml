@@ -73,3 +73,9 @@
 :supportshow:
     :cmd: "supportshow"
     :attr: supportshow
+:isls:
+    :cmd: "islshow"
+    :attr: isl_links
+:trunks:
+    :cmd: "trunksshow"
+    :attr: trunk_links

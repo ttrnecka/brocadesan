@@ -448,6 +448,8 @@ module SAN
             parse_cfgshow(line)
           when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='ns' ? k : nil }.compact.join("|")}/i)
             parse_ns(line)
+          when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='trunk' ? k : nil }.compact.join("|")}/i)
+            parse_trunk(line)
         end
       end
       
@@ -507,6 +509,26 @@ module SAN
           when line.match(/^(zone|alias)\./)
             l=line.gsub!(/^(zone|alias)\./,"").split(":")
             @parsed[:find_results] << {:obj=>l.shift,:members=>l.join(":")}
+          #islshow
+          #   1:  0->  0 10:00:00:05:33:23:86:00   1 H2C04R065-U03-A sp:  8.000G bw: 64.000G TRUNK QOS
+          when line.match(/\d+:\s*\d+->.+sp:/)
+            l_tricky, l_simple = line.split("->")
+            l_t = l_tricky.split(":")
+            
+            l = l_simple.split(" ")
+            @parsed[:isl_links]||=[]
+            @parsed[:isl_links] << {:id => l_t[0].to_i, 
+                                    :source_port_index => l_t[1].to_i, 
+                                    :destination_port_index => l[0].to_i, 
+                                    :destination_switch_wwn => l[1].strip, 
+                                    :destination_switch_domain => l[2].to_i, 
+                                    :destination_switch_name => l[3].strip, 
+                                    :speed => l[5].to_i,
+                                    :bandwidth => l[7].to_i,
+                                    :trunk => l[8..-1].include?("TRUNK"),
+                                    :qos => l[8..-1].include?("QOS"),
+                                    :cr_recov => l[8..-1].include?("CR_RECOV")
+                                    }
           #default handling
           else
             if line.match(/^\s*[a-z]+.*:/i)
@@ -631,6 +653,36 @@ module SAN
           @parsed[@parsed[:key]].last[:port_index]=line.split(":")[1].strip.to_i
         end
         
+      end
+      
+      def parse_trunk(line)
+        @parsed[:trunk_links]||=[]
+        l_tricky, l_simple = line.split("->")
+        l_t = l_tricky.split(":")
+           
+        l = l_simple.split(" ")
+        case
+        when line.match(/\d+:\s*\d+->/)
+          @parsed[:trunk_links]<<{:id => l_t[0].to_i, :members => [
+                                    { 
+                                    :source_port_index => l_t[1].to_i, 
+                                    :destination_port_index => l[0].to_i, 
+                                    :destination_switch_wwn => l[1].strip, 
+                                    :destination_switch_domain => l[2].to_i, 
+                                    :deskew => l[4].to_i,
+                                    :master => l[5]=="MASTER"
+                                    }]
+                                 }
+        else
+          @parsed[:trunk_links].last[:members]<<{ 
+                                    :source_port_index => l_t[0].to_i, 
+                                    :destination_port_index => l[0].to_i, 
+                                    :destination_switch_wwn => l[1].strip, 
+                                    :destination_switch_domain => l[2].to_i, 
+                                    :deskew => l[4].to_i,
+                                    :master => l[5]=="MASTER"
+                                    }
+        end
       end
       
       def str_to_key(str)

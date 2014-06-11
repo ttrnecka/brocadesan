@@ -131,6 +131,8 @@
     
     <li><a href="#method-i-ip">#ip</a>
     
+    <li><a href="#method-i-isls">#isls</a>
+    
     <li><a href="#method-i-kernel">#kernel</a>
     
     <li><a href="#method-i-logical_switches">#logical_switches</a>
@@ -158,6 +160,8 @@
     <li><a href="#method-i-supportshow">#supportshow</a>
     
     <li><a href="#method-i-switch_beacon">#switch_beacon</a>
+    
+    <li><a href="#method-i-trunks">#trunks</a>
     
     <li><a href="#method-i-vf">#vf</a>
     
@@ -577,7 +581,7 @@ from the switch instead of cache</p>
 
           
           <div class="method-source-code" id="aptpolicy-source">
-            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 111</span>
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 110</span>
 </pre>
           </div><!-- aptpolicy-source -->
           
@@ -608,7 +612,7 @@ the switch instead of cache</p>
 
           
           <div class="method-source-code" id="chassisname-source">
-            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 117</span>
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 116</span>
 </pre>
           </div><!-- chassisname-source -->
           
@@ -639,7 +643,7 @@ switch instead of cache</p>
 
           
           <div class="method-source-code" id="dls-source">
-            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 123</span>
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 122</span>
 </pre>
           </div><!-- dls-source -->
           
@@ -1131,7 +1135,7 @@ switch instead of cache</p>
 
           
           <div class="method-source-code" id="iod-source">
-            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 129</span>
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 128</span>
 </pre>
           </div><!-- iod-source -->
           
@@ -1162,7 +1166,7 @@ the switch instead of cache</p>
 
           
           <div class="method-source-code" id="ip-source">
-            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 147</span>
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 146</span>
 </pre>
           </div><!-- ip-source -->
           
@@ -1172,6 +1176,37 @@ the switch instead of cache</p>
 
         
       </div><!-- ip-method -->
+
+    
+      <div id="method-i-isls" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">isls</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>If called with <code>true</code> argument it will get the isl_links from
+the switch instead of cache</p>
+
+<p>Returns value in (string) format</p>
+          
+
+          
+          <div class="method-source-code" id="isls-source">
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 158</span>
+</pre>
+          </div><!-- isls-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- isls-method -->
 
     
       <div id="method-i-kernel" class="method-detail ">
@@ -1217,15 +1252,14 @@ switch instead of cache</p>
         <div class="method-description">
           
           <p>If called with <code>true</code> argument it will get the created_switches
-from the switch instead of cache created_switches contains list of all FIDs
-in the switch</p>
+from the switch instead of cache</p>
 
 <p>Returns value in (string) format</p>
           
 
           
           <div class="method-source-code" id="logical_switches-source">
-            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 99</span>
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 98</span>
 </pre>
           </div><!-- logical_switches-source -->
           
@@ -1350,7 +1384,7 @@ switch instead of cache</p>
 
           
           <div class="method-source-code" id="ports-source">
-            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 105</span>
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 104</span>
 </pre>
           </div><!-- ports-source -->
           
@@ -1511,7 +1545,7 @@ the switch instead of cache</p>
 
           
           <div class="method-source-code" id="status-source">
-            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 135</span>
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 134</span>
 </pre>
           </div><!-- status-source -->
           
@@ -1542,7 +1576,7 @@ from the switch instead of cache</p>
 
           
           <div class="method-source-code" id="status_details-source">
-            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 141</span>
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 140</span>
 </pre>
           </div><!-- status_details-source -->
           
@@ -1573,7 +1607,7 @@ the switch instead of cache</p>
 
           
           <div class="method-source-code" id="supportshow-source">
-            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 153</span>
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 152</span>
 </pre>
           </div><!-- supportshow-source -->
           
@@ -1615,6 +1649,37 @@ switch instead of cache</p>
 
         
       </div><!-- switch_beacon-method -->
+
+    
+      <div id="method-i-trunks" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">trunks</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>If called with <code>true</code> argument it will get the trunk_links from
+the switch instead of cache</p>
+
+<p>Returns value in (string) format</p>
+          
+
+          
+          <div class="method-source-code" id="trunks-source">
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 164</span>
+</pre>
+          </div><!-- trunks-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- trunks-method -->
 
     
       <div id="method-i-vf" class="method-detail ">
