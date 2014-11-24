@@ -508,7 +508,7 @@ module SAN
                               :speed=>l[4].strip, :state=>l[5].strip, :proto=>l[6].strip, :comment=>l[7..-1].join(" ")}
           when line.match(/^Index|^=/)
             ""
-          when line.match(/Created switches:/)
+          when line.match(/Created switches/)
             @parsed[:created_switches]=line.split(":")[1].strip.split(" ").map {|l| l.to_i}
           #fabrics
           when line.match(/^\s*\d+:\s[a-f0-9]{6}/i)
