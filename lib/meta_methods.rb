@@ -161,4 +161,10 @@ class Brocade::SAN::Switch
 #
 # Returns value in (string) format
 
+##
+# :method: access_gateways
+# If called with +true+ argument it will get the ag from the switch instead of cache
+#
+# Returns value in (string) format
+
 end

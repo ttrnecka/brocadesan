@@ -79,3 +79,6 @@
 :trunks:
     :cmd: "trunkshow"
     :attr: trunk_links
+:access_gateways:
+    :cmd: "agshow"
+    :attr: ag

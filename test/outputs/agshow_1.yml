@@ -1,0 +1,31 @@
+:parsing_position: end
+:ag:
+ -
+  :ports: 24
+  :wwn: '10:00:00:11:0a:00:84:a2'
+  :eth_ip: 15.84.68.94
+  :version: v6.1.0_uth8
+  :name: VCFC2CN8314D00X
+  :local: false
+ -
+  :ports: 24
+  :wwn: '10:00:00:11:0a:00:85:29'
+  :eth_ip: 15.84.68.96
+  :version: v6.1.0_uth8
+  :name: VCFC2CN8311D0B3
+  :local: false
+ -
+  :ports: 24
+  :wwn: '10:00:50:eb:1a:25:fc:ae'
+  :eth_ip: 10.200.16.161
+  :version: v7.1.1c
+  :name: H4C13R253-U12-ICB03
+  :local: true
+ -
+  :ports: 24
+  :wwn: '10:00:50:eb:1a:27:f6:02'
+  :eth_ip: 10.200.16.111
+  :version: v7.1.1c
+  :name: H4C13R253-U02-ICB03
+  :local: true
+

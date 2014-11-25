@@ -12,6 +12,7 @@
 :nsshow: ns
 :nscamshow: ns
 :fabricshow: simple
+:agshow: simple
 :configshow: simple
 :islshow: simple
 :trunkshow: trunk

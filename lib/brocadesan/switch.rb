@@ -518,6 +518,11 @@ module SAN
           when line.match(/^(zone|alias)\./)
             l=line.gsub!(/^(zone|alias)\./,"").split(":")
             @parsed[:find_results] << {:obj=>l.shift,:members=>l.join(":")}
+          #agshow
+          when line.match(/^([a-f0-9]{2}:){7}[a-f0-9]{2}\s+\d+/i) && @parsed[:parsing_position]=="agshow"
+            l=line.split(" ")
+            @parsed[:ag]||=[]
+            @parsed[:ag] << {:wwn => l[0].strip, :ports => l[1].to_i, :eth_ip=>l[2].strip, :version=>l[3].strip, :local => l[4].strip.match(/^local/) ? true : false, :name => l[5].strip } 
           #islshow
           #   1:  0->  0 10:00:00:05:33:23:86:00   1 H2C04R065-U03-A sp:  8.000G bw: 64.000G TRUNK QOS
           when line.match(/\d+:\s*\d+->.+sp:/)

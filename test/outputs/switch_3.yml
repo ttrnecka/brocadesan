@@ -1,0 +1,46 @@
+:switch_name:     H4C13R253-U02-ICB03
+:switch_type:     "72.3"
+:switch_state:    Online
+:switch_mode:     Access Gateway Mode
+:switch_wwn:      10:00:50:eb:1a:27:f6:02
+:switch_beacon:   "OFF"
+
+:ports:
+ -
+   :index: 0
+   :port: 0
+   :address: "530000"
+   :media: --
+   :speed: N8
+   :state: No_Module
+   :proto: FC
+   :comment: '(POD License Not Assigned Yet)'
+ -
+   :index: 1
+   :port: 1
+   :address: "530100"
+   :media: cu
+   :speed: N8
+   :state: Online
+   :proto: FC
+   :comment: 'F-Port 50:01:43:80:26:65:92:bc 0x023102'
+ -
+   :index: 7
+   :port: 7
+   :address: "530700"
+   :media: cu
+   :speed: AN
+   :state: No_Sync
+   :proto: FC
+   :comment: ''
+ -
+   :index: 17
+   :port: 17
+   :address: "531100"
+   :media: id
+   :speed: N8
+   :state: Online
+   :proto: FC
+   :comment: 'N-Port 10:00:00:05:33:9b:d2:00 0x023100'
+ 
+:parsing_position: end

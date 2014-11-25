@@ -1,0 +1,14 @@
+> switchshow
+switchName:     H4C13R253-U02-ICB03
+switchType:     72.3
+switchState:    Online
+switchMode:     Access Gateway Mode
+switchWwn:      10:00:50:eb:1a:27:f6:02
+switchBeacon:   OFF
+
+Index Port Address Media Speed       State   Proto
+==================================================
+   0   0   530000   --    N8       No_Module   FC  (POD License Not Assigned Yet)
+   1   1   530100   cu    N8       Online      FC  F-Port  50:01:43:80:26:65:92:bc 0x023102
+   7   7   530700   cu    AN       No_Sync     FC
+  17  17   531100   id    N8       Online      FC  N-Port  10:00:00:05:33:9b:d2:00 0x023100
