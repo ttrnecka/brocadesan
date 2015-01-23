@@ -1,11 +1,14 @@
 require 'brocadesan'
 require 'minitest/autorun'
-require 'output_reader'
+require 'output_helpers'
 
 module Brocade module SAN
   
 class WwnTest < MiniTest::Test
   include OutputReader
+  include Mock::Net::SSH
+  patch_set
+  
   def setup
     init_dev
   end

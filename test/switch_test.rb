@@ -1,11 +1,14 @@
 require 'brocadesan'
 require 'minitest/autorun'
-require 'output_reader'
+require 'output_helpers'
 
 module Brocade module SAN
   
 class SwitchTest < MiniTest::Test
   include OutputReader
+  include Mock::Net::SSH
+  patch_set
+    
   def setup
     init_dev
   end
@@ -17,7 +20,7 @@ class SwitchTest < MiniTest::Test
   def test_query
     response=@device.query("test")
     assert_instance_of Switch::Response, response
-    assert_equal Switch::QUERY_PROMPT+"test\n"+Net::SSH::get_data+"\n", response.data
+    assert_equal @device.prompt+"test\n"+Mock::Net::SSH::get_data+"\n", response.data
   end
   
   def test_device_setup
@@ -37,7 +40,7 @@ class SwitchTest < MiniTest::Test
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "switch_" do |file,output|
       init_dev
-      response=Switch::Response.new
+      response=new_mock_response
       response.data=output
       yaml=read_yaml_for(file)
            
@@ -57,7 +60,7 @@ class SwitchTest < MiniTest::Test
   end
   
   def test_vf
-    response=Switch::Response.new
+    response=new_mock_response
     response.data="> switchshow |grep \"^LS Attributes\"\n"
     @device.stub :query, response do 
       assert_equal "disabled", @device.vf(true)        
@@ -77,7 +80,7 @@ class SwitchTest < MiniTest::Test
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "vf_switch" do |file,output|
       init_dev
-      response=Switch::Response.new
+      response=new_mock_response
       response.data=output
       @device.configuration[:vf]="enabled"
       @device.set_context 99
@@ -91,15 +94,18 @@ class SwitchTest < MiniTest::Test
   def test_refresh
     #returns true and runs query if not loaded or forced, runs query
     @device.instance_variable_set(:@configuration,{:name=>"test", :parsing_position=>"test"})
+    @device.set_mode :interactive
     @device.send(:refresh, "switchshow")
     assert_equal a = {:name=>"test", :parsing_position=>"end"}, @device.configuration
-    assert_equal true, @device.instance_variable_get(:@loaded)[:switchshow] 
+    assert_equal true, @device.instance_variable_get(:@loaded)[:switchshow]
+    # refresh should use script mode 
+    assert_equal "script", @device.get_mode
   end
   
   def test_dynamic_methods
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "" do |file,output|
-      response=Switch::Response.new
+      response=new_mock_response
       response.data=output
       init_dev
       yaml=read_yaml_for(file)
@@ -139,7 +145,7 @@ class SwitchTest < MiniTest::Test
   def test_zone_cfgs_and_effective_cfg_and_zones
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "cfgshow_" do |file,output|
-      response=Switch::Response.new
+      response=new_mock_response
       response.data=output
       init_dev
       yaml=read_yaml_for(file)
@@ -187,7 +193,7 @@ class SwitchTest < MiniTest::Test
   
   def test_find_zone_alias
     
-    response=Switch::Response.new
+    response=new_mock_response
     response.data="> configshow |grep -i -E zone.VAL_lis9swep01_m1p1_IEVA16:\nzone.VAL_lis9swep01_m1p1_IEVA16:ieva16_A1_ho;ieva16_B1_ho;ida16R24c7_bay12_m1p1"
     init_dev
 
@@ -225,7 +231,7 @@ class SwitchTest < MiniTest::Test
   
   def test_find_zones_aliases
     
-    response=Switch::Response.new
+    response=new_mock_response
     response.data="> configshow |grep -i -E ^zone.VAL_lis9swep01_m1p1\nzone.VAL_lis9swep01_m1p1_IEVA16:ieva16_A1_ho;ieva16_B1_ho;ida16R24c7_bay12_m1p1\nzone.VAL_lis9swep01_m1p1_IVLS01:ivls01n2_1;ivls01n3_1;ida16R24c7_bay12_m1p1"
     init_dev
 
@@ -261,7 +267,7 @@ class SwitchTest < MiniTest::Test
   def test_wwns
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "ns_" do |file,output|
-      response=Switch::Response.new
+      response=new_mock_response
       response.data=output
       init_dev
       yaml=read_yaml_for(file)
@@ -288,7 +294,7 @@ class SwitchTest < MiniTest::Test
   def test_find_wwn
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "ns_1" do |file,output|
-      response=Switch::Response.new
+      response=new_mock_response
       response.data=output
       init_dev
       yaml=read_yaml_for(file)
@@ -321,7 +327,7 @@ class SwitchTest < MiniTest::Test
   def test_fabric
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "fabricshow_" do |file,output|
-      response=Switch::Response.new
+      response=new_mock_response
       response.data=output
       init_dev
       yaml=read_yaml_for(file)
@@ -346,7 +352,7 @@ class SwitchResponseTest < MiniTest::Test
   def test_parse   
     @output_dir=File.join(Dir.pwd,"test","outputs")
     read_all_starting_with "" do |file, output|
-      response=Switch::Response.new
+      response=new_mock_response
       response.data=output
       response.parse
       assert_equal read_yaml_for(file), response.parsed
@@ -354,7 +360,7 @@ class SwitchResponseTest < MiniTest::Test
   end
   
   def test_after_before_parse
-    response=Switch::Response.new
+    response=new_mock_response
     response.parsed[:ports]=["A","B","A"]
     response.parse
     assert_equal nil, response.parsed[:ports]

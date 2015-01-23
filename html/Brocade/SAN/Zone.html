@@ -70,7 +70,7 @@
 
   <ul class="link-list">
     
-    <li><a href="#method-c-verify_name">::verify_name</a>
+    <li><a href="#method-c-verify_member_name">::verify_member_name</a>
     
     <li><a href="#method-i-add_member">#add_member</a>
     
@@ -214,10 +214,10 @@ href="ZoneConfiguration.html">ZoneConfiguration</a></p>
       <h3 class="section-header">Public Class Methods</h3>
 
     
-      <div id="method-c-verify_name" class="method-detail ">
+      <div id="method-c-verify_member_name" class="method-detail ">
         
         <div class="method-heading">
-          <span class="method-name">verify_name</span><span
+          <span class="method-name">verify_member_name</span><span
             class="method-args">(str)</span>
           <span class="method-click-advice">click to toggle source</span>
         </div>
@@ -231,19 +231,19 @@ internally mostly</p>
           
 
           
-          <div class="method-source-code" id="verify_name-source">
+          <div class="method-source-code" id="verify_member_name-source">
             <pre><span class="ruby-comment"># File lib/brocadesan/zone.rb, line 28</span>
-<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">verify_name</span>(<span class="ruby-identifier">str</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Switch</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;Incorrect name format \&quot;#{str}\&quot;&quot;</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">str</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{MEMBER_RULE}/</span>)
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">verify_member_name</span>(<span class="ruby-identifier">str</span>)
+  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Switch</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">incorrect</span>(<span class="ruby-node">&quot;#{str}&quot;</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">str</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{MEMBER_RULE}/</span>)
 <span class="ruby-keyword">end</span></pre>
-          </div><!-- verify_name-source -->
+          </div><!-- verify_member_name-source -->
           
         </div>
 
         
 
         
-      </div><!-- verify_name-method -->
+      </div><!-- verify_member_name-method -->
 
     
     </section><!-- public-class-method-details -->
@@ -271,7 +271,7 @@ internally mostly</p>
           <div class="method-source-code" id="add_member-source">
             <pre><span class="ruby-comment"># File lib/brocadesan/zone.rb, line 49</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_member</span>(<span class="ruby-identifier">member</span>)
-  <span class="ruby-constant">Zone</span><span class="ruby-operator">::</span><span class="ruby-identifier">verify_name</span>(<span class="ruby-identifier">member</span>)
+  <span class="ruby-constant">Zone</span><span class="ruby-operator">::</span><span class="ruby-identifier">verify_member_name</span>(<span class="ruby-identifier">member</span>)
   <span class="ruby-ivar">@members</span><span class="ruby-operator">&lt;&lt;</span><span class="ruby-identifier">member</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- add_member-source -->

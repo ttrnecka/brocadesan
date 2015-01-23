@@ -29,20 +29,38 @@ You can use BrocadeSAN in 2 different ways:
 	switch.firmare
   end
   
+== Special Usage
 
+If the API is not sufficient for your need you can always utilize the Brocade::SAN::Switch#query method to execute arbitrary commands
+  
+  # sends command to switch
+  response=switch.query("portshow | grep Online ")
+  
+  # sends several commands to switch
+  response=switch.query("switchshow","cfgshow")
+  
+  # calls interactive command and sends response along the way
+  # the mode has to be set to interactive
+  # the mode will persist across queries
+  # change it back to :script when you want to run non-interactive command
+  switch.set_mode :interactive 
+  response=switch.query("cfgsave","y")
+  
+Response is type of Brocade::SAN::Switch::Response. You can get the data by calling +data+ and errors by calling +errors+.
+
+The data will be raw output from the switch with each cmd prefixed by defined/default prompt.
 == Download and Installation
 
 Installation *with* RubyGems:
-  $ su
   # gem install brocadesan
     
 == Author
 
-Written 2013 by Tomas Trnecka <mailto:trnecka@gmail.com>.
+Written 2015 by Tomas Trnecka <mailto:trnecka@gmail.com>.
 
 == License
 
-Copyright (c) 2013 Tomas Trnecka
+Copyright (c) 2015 Tomas Trnecka
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

@@ -1,0 +1,4 @@
+> agshow
+Worldwide Name            Ports   Enet IP Addr    Firmware                        Local/Remote   Name
+------------------------------------------------------------------------------------------------------
+No Access Gateway is registered with this fabric

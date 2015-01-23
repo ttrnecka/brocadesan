@@ -170,6 +170,8 @@
     
 <p><a href="Agent.html">Agent</a> class, used for provisioning tasks</p>
 
+<p>Under development - do not use TODO: need to properly test it</p>
+
   </div><!-- description -->
 
   
@@ -210,7 +212,7 @@ the way it will be queried further.</p>
 
           
           <div class="method-source-code" id="create-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 14</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">create</span>(*<span class="ruby-identifier">params</span>)
   <span class="ruby-identifier">agent</span>=<span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(*<span class="ruby-identifier">params</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -240,7 +242,7 @@ the way it will be queried further.</p>
 
           
           <div class="method-source-code" id="new-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 350</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 353</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(*<span class="ruby-identifier">params</span>)
   <span class="ruby-keyword">super</span>(*<span class="ruby-identifier">params</span>)
   <span class="ruby-ivar">@transaction</span>=<span class="ruby-keyword">nil</span>
@@ -280,7 +282,7 @@ not owner of the transaction</p>
 
           
           <div class="method-source-code" id="abort_transaction-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 309</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 312</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">abort_transaction</span>
   <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-string">&quot;cfgtransabort&quot;</span>)
   <span class="ruby-comment">#empty response is ok</span>
@@ -292,7 +294,7 @@ not owner of the transaction</p>
   <span class="ruby-keyword">when</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp">%rtrans_abort: there is an outstanding  transaction/</span>)
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRANS_NOTOWNER</span>)
   <span class="ruby-keyword">else</span>
-    <span class="ruby-identifier">error</span> = <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;\n&quot;</span>).<span class="ruby-identifier">delete_if</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">item</span><span class="ruby-operator">|</span> <span class="ruby-identifier">item</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r^#{Agent::QUERY_PROMPT}/</span>)}.<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot;\n&quot;</span>)
+    <span class="ruby-identifier">error</span> = <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;\n&quot;</span>).<span class="ruby-identifier">delete_if</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">item</span><span class="ruby-operator">|</span> <span class="ruby-identifier">item</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r^#{@prompt}/</span>)}.<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot;\n&quot;</span>)
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">error</span>)
   <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
@@ -332,7 +334,7 @@ is unexpected</p>
 
           
           <div class="method-source-code" id="alias_change-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 89</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 92</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_change</span>(<span class="ruby-identifier">al</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ALIAS_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">al</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Alias</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
@@ -379,7 +381,7 @@ unexpected</p>
 
           
           <div class="method-source-code" id="alias_create-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 52</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 55</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_create</span>(<span class="ruby-identifier">al</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ALIAS_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">al</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Alias</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
@@ -424,7 +426,7 @@ is unexpected</p>
 
           
           <div class="method-source-code" id="alias_delete-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 71</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 74</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_delete</span>(<span class="ruby-identifier">al</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ALIAS_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">al</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Alias</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
@@ -473,7 +475,7 @@ or response is unexpected</p>
 
           
           <div class="method-source-code" id="cfg_add-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 259</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 262</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_add</span>(<span class="ruby-identifier">cfg</span>,<span class="ruby-identifier">zone</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFG_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">ZoneConfiguration</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ZONE_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">zone</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Zone</span>
@@ -524,7 +526,7 @@ response is unexpected</p>
 
           
           <div class="method-source-code" id="cfg_create-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 215</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 218</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_create</span>(<span class="ruby-identifier">cfg</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFG_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">ZoneConfiguration</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
@@ -574,7 +576,7 @@ or response is unexpected</p>
 
           
           <div class="method-source-code" id="cfg_delete-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 238</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 241</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_delete</span>(<span class="ruby-identifier">cfg</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFG_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">ZoneConfiguration</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
@@ -611,7 +613,7 @@ result, otherwise returns true</p>
 
           
           <div class="method-source-code" id="cfg_enable-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 123</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 126</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_enable</span>(<span class="ruby-identifier">cfg</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFG_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">ZoneConfiguration</span>
   
@@ -665,7 +667,7 @@ or response is unexpected</p>
 
           
           <div class="method-source-code" id="cfg_remove-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 280</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 283</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_remove</span>(<span class="ruby-identifier">cfg</span>,<span class="ruby-identifier">zone</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFG_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">ZoneConfiguration</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ZONE_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">zone</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Zone</span>
@@ -704,7 +706,7 @@ otherwise returns true</p>
 
           
           <div class="method-source-code" id="cfg_save-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 103</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 106</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_save</span>
   <span class="ruby-identifier">set_mode</span>(<span class="ruby-string">&quot;interactive&quot;</span>)
   
@@ -750,7 +752,7 @@ otherwise returns true</p>
 
           
           <div class="method-source-code" id="check_for_running_transaction-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 295</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 298</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">check_for_running_transaction</span>
   <span class="ruby-comment"># ignore thi command when within transaction block</span>
   <span class="ruby-comment"># as this command is started at the beginign of transaction</span>
@@ -791,7 +793,7 @@ otherwise returns true</p>
 
           
           <div class="method-source-code" id="exist-3F-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 333</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 336</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">str</span>,<span class="ruby-identifier">opts</span>={})
   <span class="ruby-identifier">obj</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>].<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> [<span class="ruby-value">:zone</span>,<span class="ruby-value">:alias</span>,<span class="ruby-value">:cfg</span>].<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>]) <span class="ruby-operator">?</span> <span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>] <span class="ruby-operator">:</span> <span class="ruby-value">:zone</span>
   <span class="ruby-identifier">cmd</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">obj</span>
@@ -839,7 +841,7 @@ if the transaction is ok</p>
 
           
           <div class="method-source-code" id="transaction-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 26</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 29</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">transaction</span>
   <span class="ruby-ivar">@transaction_level</span><span class="ruby-operator">+=</span><span class="ruby-value">1</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
@@ -893,7 +895,7 @@ is unexpected</p>
 
           
           <div class="method-source-code" id="zone_change-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 193</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 196</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">zone_change</span>(<span class="ruby-identifier">zone</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ZONE_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">zone</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Zone</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
@@ -942,7 +944,7 @@ unexpected</p>
 
           
           <div class="method-source-code" id="zone_create-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 151</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 154</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">zone_create</span>(<span class="ruby-identifier">zone</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ZONE_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">zone</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Zone</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
@@ -993,7 +995,7 @@ is unexpected</p>
 
           
           <div class="method-source-code" id="zone_delete-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 175</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 178</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">zone_delete</span>(<span class="ruby-identifier">zone</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ZONE_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">zone</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Zone</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 

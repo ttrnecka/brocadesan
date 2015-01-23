@@ -64,6 +64,8 @@
 
   <ul class="link-list">
     
+    <li><a href="#method-c-new">::new</a>
+    
     <li><a href="#method-i-get_mode">#get_mode</a>
     
     <li><a href="#method-i-query">#query</a>
@@ -155,11 +157,22 @@ href="SshDevice/Response.html">Response</a></p>
       <h3 class="section-header">Constants</h3>
       <dl>
       
-        <dt id="QUERY_PROMPT">QUERY_PROMPT
+        <dt id="DEFAULT_QUERY_PROMPT">DEFAULT_QUERY_PROMPT
         
-        <dd class="description"><p>default query prompt that will preceed each command started you
+        <dd class="description"><p>default query prompt that will preceed each command started by
 <code>query</code> in the <a href="SshDevice/Response.html">Response</a>
 <code>data</code></p>
+
+<p>value is "&gt; "</p>
+
+<p>This way the parser can separate from commands and data. The default will
+work everwhere where the retunned data is not prepended by "&gt; "</p>
+
+<p>Ignore the ssh prompt like this: super_server(admin)&gt; cmd
+super_server(admin)&gt; data</p>
+
+<p>This on the other hand would be problem. In this case override the prompt
+super_server(admin)&gt; cmd super_server(admin)&gt;&gt; data</p>
         
       
       </dl>
@@ -167,9 +180,82 @@ href="SshDevice/Response.html">Response</a></p>
     
 
     
+    <!-- Attributes -->
+    <section id="attribute-method-details" class="method-section section">
+      <h3 class="section-header">Attributes</h3>
+
+      
+      <div id="attribute-i-prompt" class="method-detail">
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">prompt</span><span
+            class="attribute-access-type">[R]</span>
+        </div>
+
+        <div class="method-description">
+        
+        
+        
+        </div>
+      </div>
+      
+    </section><!-- attribute-method-details -->
+    
 
     <!-- Methods -->
     
+     <section id="public-class-5Buntitled-5D-method-details" class="method-section section">
+      <h3 class="section-header">Public Class Methods</h3>
+
+    
+      <div id="method-c-new" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">new</span><span
+            class="method-args">(address,user,password,opts={})</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Initialization method</p>
+
+<p><code>opts</code> can be:</p>
+<dl class="rdoc-list label-list"><dt>:interactive
+<dd>
+<p><code>true</code> / <code>false</code> will use interactive query can be
+set later</p>
+</dd><dt>:prompt
+<dd>
+<p><code>prompt</code> will override the <a
+href="SshDevice.html#DEFAULT_QUERY_PROMPT">DEFAULT_QUERY_PROMPT</a></p>
+</dd></dl>
+          
+
+          
+          <div class="method-source-code" id="new-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 36</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">address</span>,<span class="ruby-identifier">user</span>,<span class="ruby-identifier">password</span>,<span class="ruby-identifier">opts</span>={}) 
+    <span class="ruby-ivar">@address</span>=<span class="ruby-identifier">address</span>
+    <span class="ruby-ivar">@user</span>=<span class="ruby-identifier">user</span>
+    <span class="ruby-ivar">@password</span>=<span class="ruby-identifier">password</span>
+    <span class="ruby-ivar">@opts</span>=<span class="ruby-identifier">opts</span>
+    <span class="ruby-ivar">@session</span>=<span class="ruby-keyword">nil</span>
+    <span class="ruby-ivar">@session_level</span>=<span class="ruby-value">0</span>
+    <span class="ruby-ivar">@prompt</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-value">:prompt</span>] <span class="ruby-operator">?</span> <span class="ruby-identifier">opts</span>[<span class="ruby-value">:prompt</span>].<span class="ruby-identifier">to_s</span> <span class="ruby-operator">:</span> <span class="ruby-constant">DEFAULT_QUERY_PROMPT</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- new-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- new-method -->
+
+    
+    </section><!-- public-class-method-details -->
+  
      <section id="public-instance-5Buntitled-5D-method-details" class="method-section section">
       <h3 class="section-header">Public Instance Methods</h3>
 
@@ -185,13 +271,16 @@ href="SshDevice/Response.html">Response</a></p>
 
         <div class="method-description">
           
-          <p>get current query mode response is either <code>interactive</code> or
-<code>script</code></p>
+          <p>get current query mode</p>
+
+<p>returns either <code>interactive</code> or <code>script</code></p>
+
+<p>default mode is <code>script</code></p>
           
 
           
           <div class="method-source-code" id="get_mode-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 28</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 51</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_mode</span>
   [<span class="ruby-keyword">true</span>,<span class="ruby-keyword">false</span>].<span class="ruby-identifier">include?</span>(<span class="ruby-ivar">@opts</span>[<span class="ruby-value">:interactive</span>]) <span class="ruby-operator">?</span> (<span class="ruby-ivar">@opts</span>[<span class="ruby-value">:interactive</span>]<span class="ruby-operator">==</span><span class="ruby-keyword">true</span> <span class="ruby-operator">?</span> <span class="ruby-string">&quot;interactive&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-string">&quot;script&quot;</span>) <span class="ruby-operator">:</span> <span class="ruby-string">&quot;script&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -217,15 +306,17 @@ href="SshDevice/Response.html">Response</a></p>
         <div class="method-description">
           
           <p>Queries <code>cmds</code> commands directly.  This method is to be used to
-extend this API  or  to do more difficult queries that have to be parsed
-separately</p>
+implement higlevel API  or  to do more difficult queries that have to be
+parsed separately and for which there is now highlevel API</p>
 
 <p>When started in interactive mode be sure the command is followed by inputs
-for that command. If command will require additional input and there is no
-one provided the command will receive <code>enter</code></p>
+for that command. If command will require additional input and there is not
+one provided the prompt will receive <code>enter</code>. It will do this
+maximum of 100 times, then it gives up and returns whatever it got until
+then.</p>
 
 <p>Query command will open connection to device if called outside session
-block or use existing if called within session block.</p>
+block or use existing session if called within session block.</p>
 
 <p>Example:</p>
 
@@ -238,7 +329,8 @@ block or use existing if called within session block.</p>
 </pre>
 
 <p>Returns instance of <a href="SshDevice/Response.html">Response</a> or
-raises error if the connectionm cannot be opened</p>
+raises <a href="SshDevice/Error.html">Error</a> if the connection cannot be
+opened</p>
 
 <p>Raises <a href="SshDevice/Error.html">Error</a> if SSH returns error. SSH
 error will be available in the exception message</p>
@@ -246,10 +338,10 @@ error will be available in the exception message</p>
 
           
           <div class="method-source-code" id="query-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 64</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 89</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query</span>(*<span class="ruby-identifier">cmds</span>)
   <span class="ruby-identifier">output</span>=<span class="ruby-keyword">nil</span>
-  <span class="ruby-keyword">if</span> <span class="ruby-ivar">@session</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@session</span>.<span class="ruby-identifier">closed?</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">session_exist?</span>
     <span class="ruby-identifier">output</span>=<span class="ruby-identifier">exec</span>(<span class="ruby-ivar">@session</span>,<span class="ruby-identifier">cmds</span>)
   <span class="ruby-keyword">else</span>
     <span class="ruby-constant">Net</span><span class="ruby-operator">::</span><span class="ruby-constant">SSH</span>.<span class="ruby-identifier">start</span> <span class="ruby-ivar">@address</span>, <span class="ruby-ivar">@user</span>, <span class="ruby-value">:password=</span><span class="ruby-operator">&gt;</span><span class="ruby-ivar">@password</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">ssh</span><span class="ruby-operator">|</span>
@@ -282,10 +374,10 @@ error will be available in the exception message</p>
 
         <div class="method-description">
           
-          <p>Opens a session</p>
+          <p>Opens a session block</p>
 
-<p>All queries within the session use the same connection. This speeds up the
-query processing.</p>
+<p>All queries within the session block use the same connection. This speeds
+up the query processing.</p>
 
 <p>The connection is closed at the end of the block</p>
 
@@ -298,14 +390,18 @@ closed only at the last block</p>
   device.query(&quot;switchname&quot;)
   device.version
 end</pre>
+
+<p>Raises <a href="SshDevice/Error.html">SshDevice::Error</a> if run without
+block</p>
           
 
           
           <div class="method-source-code" id="session-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 94</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 119</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">session</span>
+  <span class="ruby-identifier">raise</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">SESSION_WTIHOUT_BLOCK</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">block_given?</span>
   <span class="ruby-ivar">@session_level</span><span class="ruby-operator">+=</span><span class="ruby-value">1</span>
-  <span class="ruby-keyword">if</span> <span class="ruby-ivar">@session_level</span> <span class="ruby-operator">==</span> <span class="ruby-value">1</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">session_exist?</span>
     <span class="ruby-ivar">@session</span>=<span class="ruby-constant">Net</span><span class="ruby-operator">::</span><span class="ruby-constant">SSH</span>.<span class="ruby-identifier">start</span> <span class="ruby-ivar">@address</span>, <span class="ruby-ivar">@user</span>, <span class="ruby-value">:password=</span><span class="ruby-operator">&gt;</span><span class="ruby-ivar">@password</span>
   <span class="ruby-keyword">end</span> 
   <span class="ruby-keyword">yield</span>
@@ -335,16 +431,20 @@ end</pre>
 
         <div class="method-description">
           
-          <p>sets current query mode <code>mode</code> : interactive or script</p>
+          <p>sets current query mode</p>
 
-<p>interactive - meant to do interactive queries in scripted manner</p>
+<p><code>mode</code>: interactive or script</p>
+
+<p>interactive - used to do interactive queries in scripted manner by
+providing all responses in advance, see <a
+href="SshDevice.html#method-i-query">query</a></p>
           
 
           
           <div class="method-source-code" id="set_mode-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 36</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_mode</span>(<span class="ruby-identifier">mode</span>)
-  <span class="ruby-ivar">@opts</span>[<span class="ruby-value">:interactive</span>] = <span class="ruby-identifier">mode</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;interactive&quot;</span> <span class="ruby-operator">?</span> <span class="ruby-keyword">true</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">false</span>
+  <span class="ruby-ivar">@opts</span>[<span class="ruby-value">:interactive</span>] = <span class="ruby-identifier">mode</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;interactive&quot;</span> <span class="ruby-operator">?</span> <span class="ruby-keyword">true</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">false</span>
   <span class="ruby-identifier">get_mode</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- set_mode-source -->

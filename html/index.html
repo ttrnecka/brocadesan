@@ -130,21 +130,47 @@ switch.session do
       switch.firmare
 end</pre>
 
+<h2 id="label-Special+Usage">Special Usage</h2>
+
+<p>If the API is not sufficient for your need you can always utilize the <a
+href="Brocade/SAN/Switch.html#method-i-query">Brocade::SAN::Switch#query</a>
+method to execute arbitrary commands</p>
+
+<pre># sends command to switch
+response=switch.query(&quot;portshow | grep Online &quot;)
+
+# sends several commands to switch
+response=switch.query(&quot;switchshow&quot;,&quot;cfgshow&quot;)
+
+# calls interactive command and sends response along the way
+# the mode has to be set to interactive
+# the mode will persist across queries
+# change it back to :script when you want to run non-interactive command
+switch.set_mode :interactive 
+response=switch.query(&quot;cfgsave&quot;,&quot;y&quot;)</pre>
+
+<p>Response is type of <a
+href="Brocade/SAN/Switch/Response.html">Brocade::SAN::Switch::Response</a>.
+You can get the data by calling <code>data</code> and errors by calling
+<code>errors</code>.</p>
+
+<p>The data will be raw output from the switch with each cmd prefixed by
+defined/default prompt.</p>
+
 <h2 id="label-Download+and+Installation">Download and Installation</h2>
 
 <p>Installation <strong>with</strong> RubyGems:</p>
 
-<pre>$ su
-# gem install brocadesan</pre>
+<pre># gem install brocadesan</pre>
 
 <h2 id="label-Author">Author</h2>
 
-<p>Written 2013 by Tomas Trnecka &lt;<a
+<p>Written 2015 by Tomas Trnecka &lt;<a
 href="mailto:trnecka@gmail.com">trnecka@gmail.com</a>&gt;.</p>
 
 <h2 id="label-License">License</h2>
 
-<p>Copyright (c) 2013 Tomas Trnecka</p>
+<p>Copyright (c) 2015 Tomas Trnecka</p>
 
 <p>Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),

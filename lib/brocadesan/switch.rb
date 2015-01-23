@@ -18,11 +18,12 @@ module SAN
   end
   
   # Class to model SAN switch from Brocade
-  class Switch #< BrocadeSanDevice
+  class Switch 
     
     include SshDevice
     
-    # Maps each method name to command to be run to obtain it and to hash key where it ill be stored
+    # Maps each method name to command to be run to obtain it and to hash key where it ill be stored.
+    # As well sets the format of the returned value. This is used only for documentation purposes.
     # 
     # See lib/config/brocade/san/switch_cmd_mapping.yml for details
     #
@@ -30,17 +31,22 @@ module SAN
     #  :name:
     #   :cmd: switchshow
     #   :attr: switch_name
+    #   :format: string
     #
-    # This will cause that class will have method called name(forced=true).
+    # This will cause that class will have instance method called name(forced=true).
     # When the method is called first time or +forced+ is true the +switchshow+ command
     # will be queried on the switch.
-    # Subsequently you need to edit the Response parser to parse the value and store it into
-    # Response +parsed+ hash under +:switch_name+ key.
-    # At the end the +:switch_name+ key is returned from +configuration+ attribute
+    # The query response will be then parsed and stored in Response +parsed+ hash under +:switch_name+ key.
+    # The +parsed+ hash is then merged into switch +configuration+ hash.
+    # At the end the +:switch_name+ key is returned from +configuration+ hash.
+    #
+    # The parser needs to ensure that it parses the +cmd+ output and stores the proper value into Response +parsed+ under +:attr+ key.
   
     CMD_MAPPING=YAML.load(File.read(Configuration::cmd_mapping_path(self)))
     
     # Maps each command to the parser method to use
+    #
+    # See lib/config/parser_mapping.yml for details
     PARSER_MAPPING=YAML.load(File.read(Configuration::parser_path))
     
     # zone configuration, zone and zone aliases naming rule
@@ -62,7 +68,7 @@ module SAN
     # this method is used internally mostly
     
     def self.verify_name(name)
-      raise Switch::Error.new("Incorrect name format \"#{name}\"") if !name.match(/#{NAME_RULE}/i)
+      raise Switch::Error.incorrect(name) if !name.match(/#{NAME_RULE}/i)
     end
     
     # Creates a Switch instance and tests a connection.
@@ -71,7 +77,7 @@ module SAN
     def initialize(*params)
       super(*params)
       @configuration={}
-      self.vf
+      vf
     end
     
     # Hash containing parsed attributes
@@ -79,19 +85,27 @@ module SAN
     # Can be used to obtain parsed attributes for which there is no named method.
     # These attributes however has to be obtained as colateral of running another public method.
     #
+    # Generally this attribute should not be accessed directly but named method for the given attribute should be created.
+    #
     # Example:
     #
-    #  # this will call fosconfig --show (see CMD_MAPPING)
-    #  # and load :fc_routing_service, :i_scsi_service and others into configuration as well
-    #  # the command however returns only whether the virtual_fabric is enabled/disabled
+    #  # this will call switchshow (see CMD_MAPPING)
+    #  # and load :several switchow values into configuration as well
+    #  # the command however returns only whether the ls_attributtes
     #
     #  switch.configuration
     #  => nil
-    #  switch.vf
-    #  => "enabled"
+    #  switch.ls_attributes
+    #  => {:fid=>"128", :base_switch=>"no", :default_switch=>"yes", :address_mode=>"0"}
     #  switch.configuration
-    #  => {:parsing_position=>"end", :fc_routing_service=>"disabled", :i_scsi_service=>"Service not supported on this Platform", :i_sns_client_service=>"Serv
-    #  ice not supported on this Platform", :virtual_fabric=>"enabled", :ethernet_switch_service=>"disabled"}
+    #  => {:vf=>"enabled", :parsing_position=>"end", :switch_name=>"H2C04R065-U03-A01", :switch_type=>"62.3", :switch_state=>"Online", ...
+    #  switch.configuration[:switch_name]
+    #  => "H2C04R065-U03-A01"
+    #
+    #  # this swichname will be taken from cache as the switchshow was started as part of ls_attributes
+    #  switch.name
+    #  => "H2C04R065-U03-A01"
+    
     
     attr_reader :configuration 
     
@@ -122,11 +136,11 @@ module SAN
     #
     # named methods are wrappers around this method so you should not use this directly
     def get(attr,forced=false)
-      raise Switch::Error.new('Unknown attribute') if CMD_MAPPING[attr.to_sym].nil?
+      raise Switch::Error.unknown if CMD_MAPPING[attr.to_sym].nil?
       
       cmd=CMD_MAPPING[attr.to_sym][:cmd]
       
-      refresh(cmd) if !@loaded || !@loaded[key(cmd)] || forced
+      refresh(cmd,"",forced)
       
       @configuration[CMD_MAPPING[attr.to_sym][:attr].to_sym]
     end
@@ -135,11 +149,7 @@ module SAN
     
     def fabric(forced=false)
       cmd="fabricshow"
-      filter = ""
-
-      if !@loaded || !@loaded[key(cmd+filter)] || forced
-        refresh(cmd,filter)
-      end
+      refresh(cmd,"",forced)
       @configuration[:fabric]
     end
     
@@ -149,22 +159,28 @@ module SAN
     
     def vf(forced=false)
       if !@configuration[:vf] || forced
+        # using this instead of fosconfig --show as that command does not work everywhere
+        # we could user #ls_attributes method but that loaded whole switchshow os this will be a bit faster, especially with big switches
+        # it needs to be faster as vf is called during initialization
+        # if the switch is vf there will be LS Attributes line, otherwise it will be empty
         response=query("switchshow|grep \"^LS Attributes\"")
         @configuration[:vf] = response.data.split("\n").size == 2 ? "enabled" : "disabled"
       end
       @configuration[:vf]
     end
     
-    # Returns all ZoneConfiguration's array
-    
+    # Returns ZoneConfigurations array
+    #
+    # If +full+ is set to true it loads full configurations with zones and aliases, otherwise it gets just the names
     def zone_configurations(full=false,forced=false)
       get_configshow(full,forced)[:zone_configurations]
     end
     
     # Returns effective ZoneConfiguration
-    
+    #
+    # If +full+ is set to true it loads full effective configuration with zones and aliases, otherwise it gets just the name
     def effective_configuration(full=false,forced=false)
-      self.zone_configurations(full,forced).select {|z| z.effective == true}.first
+      zone_configurations(full,forced).select {|z| z.effective == true}.first
     end
     
     # returns all zones defined on the switch as array of Zone
@@ -181,7 +197,7 @@ module SAN
     
     # returns Zone with name of +str+ if exists, +nil+ otherwise
     def find_zone(str)
-      zone = find(str,:object=>:zone)
+      find(str,:object=>:zone)
     end
     
     # returns Zone array of Zones with name matching +regexp+ if exists, [] otherwise
@@ -209,13 +225,12 @@ module SAN
     
     # returns all WWNs
     #
-    # mode => :local (default), :cached, :all
+    # +mode+
     #
-    # :local - returns all local WWNs
-    #
-    # :cached - returns wwns cached from remote switches
-    #
-    # :all - returns all local and remote wwns
+    # [:local]  returns all local WWNs
+    # [:cached] returns wwns cached from remote switches
+    # [:all]    returns all local and remote wwns
+    
     def wwns(forced=false,mode=:local)
       if mode==:local
         get_ns(true,forced,:local=>true)
@@ -230,30 +245,39 @@ module SAN
     #
     # if +forced+ is true it will load the data from switch instead of the cache 
     #
-    # :fabric_wide => searches whole fabric
+    # +opts+
+    #
+    # [:fabric_wide]  searches whole fabric
     def find_wwn(value,forced=true,opts={:fabric_wide=>false})
       objs = opts[:fabric_wide]==true ? get_ns(true,forced,:local=>true).concat(get_ns(true,forced,:remote=>true)) : get_ns(true,forced,:local=>true)
       objs.find {|k| value.downcase == k.value.downcase}
     end
     
     # finds configuration object by +str+. Case insensitive.
-    # If not object type is specified it searches :zone. Find only saved objects. If the object was created but the transaction is not confirmed it will not find it.
+    # If the +object+ option is not specified it searches :zone objects. It finds only saved objects. If the object was created but the transaction is not confirmed it will not find it.
     #
-    # :object => :zones (default), :aliases
-    # :find_mode => :partial, :full(default)
+    # +opts+
+    #
+    # [:object]     :zones (default) - finds zones
+    #
+    #               :aliases - finds aliases
+    # [:find_mode]  :partial - find partial matches
+    #
+    #               :exact(default) - finds exact matches
     #
     # Example:
     #
     # switch.find("zone1",:object=>:zone)
     def find(str,opts={})
       obj = !opts[:object].nil? && [:zone,:alias].include?(opts[:object]) ? opts[:object] : :zone
-      mode = !opts[:find_mode].nil? && [:partial].include?(opts[:find_mode]) ? opts[:find_mode] : :full
-      grep_exp = mode==:full ? " | grep -i -E ^#{obj}\..*#{str}:" : " | grep -i -E ^#{obj}\..*#{str}"  
+      mode = !opts[:find_mode].nil? && [:partial,:exact].include?(opts[:find_mode]) ? opts[:find_mode] : :exact
+      grep_exp = mode==:exact ? " | grep -i -E ^#{obj}\..*#{str}:" : " | grep -i -E ^#{obj}\..*#{str}"  
       
       response=query("configshow"+grep_exp)
       response.parse
       
-      #objs=get_configshow(true)[obj]
+      #output of configshow is stored to find_results
+      
       objs=response.parsed[:find_results]
       objs||=[]
       
@@ -266,9 +290,11 @@ module SAN
          end
          result<<i
       end
+      # result is array of Zone or Alias instances
       result
     end
     
+    # query calls SshDevice#query but first iject vf context related command into the commands
     def query(*cmds) #:nodoc
       cmds.map! {|cmd| fullcmd(cmd)}
       super(*cmds)
@@ -276,13 +302,15 @@ module SAN
     
     private
     
+    def should_refresh?(cmd, forced)
+      !@loaded || !@loaded[key(cmd)] || forced  
+    end
+     
     def get_configshow(full=false,forced=false)
       cmd="cfgshow"
       filter = full==false ? "-e cfg: -e configuration:" : ""
       
-      if !@loaded || !@loaded[key(cmd+filter)] || forced
-        refresh(cmd,filter)
-      end
+      refresh(cmd,filter,forced)
         
         #storing configs  
         tmp_cfg={}
@@ -343,9 +371,7 @@ module SAN
       key = opts[:local] ? :wwn_local : :wwn_remote
       filter = "" #full==false ? "-e cfg: -e configuration:" : ""
       
-      if !@loaded || !@loaded[key(cmd+filter)] || forced
-        refresh(cmd,filter)
-      end
+      refresh(cmd,filter,forced)
         
       #storing wwns  
       tmp_wwns=[]
@@ -360,7 +386,9 @@ module SAN
       tmp_wwns
     end
     
-    def refresh(cmd,filter="")
+    def refresh(cmd,filter="",forced=true)
+      set_mode :script
+      return @loaded[key(cmd)] if !should_refresh?(cmd+filter,forced)
       grep_exp=filter.empty? ? "" : " | grep #{filter}" 
       response=query(cmd+grep_exp)
       response.parse
@@ -418,34 +446,38 @@ module SAN
       
       def after_parse
         @parsed[:ports].uniq! if @parsed[:ports]
-        @parsed.delete(:pointer)
-        @parsed.delete(:last_key)
-        @parsed.delete(:key)
-        @parsed.delete(:domain)
-        @parsed.delete(:was_popped)
-        @parsed.delete(:find_results) if @parsed[:find_results].empty?
+        to_purge = [:pointer,:last_key,:key,:domain,:was_popped]
+        to_purge<<:find_results if @parsed[:find_results].empty?
+        to_purge.each {|k| @parsed.delete(k)}
+        
       end
       
       def parse_line(line)
         return if line.empty?
-        # we detect which command output we parse - commands start with > on the XML line
-        @parsed[:parsing_position] = case 
-          when line.match(/^#{Switch::QUERY_PROMPT}/) then line.gsub(/(fosexec --fid \d+ \')|\'$|\' \|.*$/,"").split(" ")[1]
+        # we detect which command output we parse - commands start with defined prompt on the XML line
+        @parsed[:parsing_position] = case
+          # stripping fosexec, all pipes and ' to get pure command 
+          when line.match(/^#{@prompt}/) then line.gsub(/(fosexec --fid \d+ \')|\'$|\' \|.*$/,"").split(" ")[1]
           else @parsed[:parsing_position]
         end
         #some default processing
-        if line.match(/^#{Switch::QUERY_PROMPT}/)
+        if line.match(/^#{@prompt}/)
           case @parsed[:parsing_position]
           when "islshow"
             @parsed[:isl_links]||=[]
           when "trunkshow"
             @parsed[:trunk_links]||=[]
+          when "agshow"
+            @parsed[:ag]||=[]
           end
         end
-        #do not process if we are on query line
-        return if line.match(/^#{Switch::QUERY_PROMPT}/)
+        #do not process if we are on command line
+        return if line.match(/^#{@prompt}/)
   
-        # we parse only certain commands
+        # we parse only certain commands definned in PARSER_MAPPING
+        # all other commands are ignored by parser
+        # you can call them usign query and parse by yourself if you need some other
+        # or define parser mapping, command mapping and update given parser
         case 
           when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='simple' ? k : nil }.compact.join("|")}/i)
             parse_simple(line)
@@ -462,20 +494,25 @@ module SAN
         end
       end
       
+      # parser used to parse commands with 1 line output
       def parse_oneline(line)
         @parsed[@parsed[:parsing_position].to_sym]=line
       end
-    
+      
+      # parser used to parse commands with multi lines output
       def parse_multiline(line)
+        # switchstatusshow
         if line.match(/^\s*[a-z]+.*:/i)
           arr = line.split(":")
           @parsed[arr[0].strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym]=arr[1..-1].join(":").strip
         else
+          #supportshow
           @parsed[@parsed[:parsing_position].to_sym]||=""
           @parsed[@parsed[:parsing_position].to_sym]+=line+"\n"
         end
       end
       
+      # parser for multiline output where each line is independent
       def parse_simple(line)
         case
           #extra handling
@@ -509,7 +546,7 @@ module SAN
           when line.match(/^Index|^=/)
             ""
           when line.match(/Created switches/)
-            @parsed[:created_switches]=line.split(":")[1].strip.split(" ").map {|l| l.to_i}
+            @parsed[:created_switches]=line.split(":")[1].strip.split(" ").map {|l1| l1.to_i}
           #fabrics
           when line.match(/^\s*\d+:\s[a-f0-9]{6}/i)
             l=line.split(" ")
@@ -543,7 +580,9 @@ module SAN
                                     :qos => l[8..-1].include?("QOS"),
                                     :cr_recov => l[8..-1].include?("CR_RECOV")
                                     }
-          #default handling
+          #default handling if it doesno match specialized match
+          # parse lines formated like 
+          # param: value
           else
             if line.match(/^\s*[a-z]+.*:/i)
               arr = line.split(":")
@@ -552,6 +591,7 @@ module SAN
           end  
       end
       
+      # parser dedicated to cfgshow format
       def parse_cfgshow(line)
         # once effective_configuration is loaded we ignore rest
         return if @parsed[:effective_configuration] and !@parsed[:effective_configuration][:cfg].nil?
@@ -638,6 +678,7 @@ module SAN
         true
       end
       
+      # name server parser
       def parse_ns(line)
         @parsed[:domain]||=0
         @parsed[:key] = @parsed[:parsing_position]=="nsshow" ? :wwn_local : :wwn_remote
@@ -669,6 +710,7 @@ module SAN
         
       end
       
+      # trunk parser
       def parse_trunk(line)
         return if line.match(/No trunking/i)
         @parsed[:trunk_links]||=[]
@@ -700,6 +742,7 @@ module SAN
         end
       end
       
+      # transforamtino method to define parsed key based on the string
       def str_to_key(str)
         str.strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym
       end
@@ -709,6 +752,14 @@ module SAN
   class Switch
     # class extending SshDevice::Error
      class Error < self::Error
+       WRONG_FORMAT="Error: Incorrect format"
+       def self.incorrect(str) #:nodoc:
+         self.new("#{WRONG_FORMAT} - #{str}")
+       end
+       
+       def self.unknown
+         self.new("Unknown attribute")
+       end
      end
   end
 end; end

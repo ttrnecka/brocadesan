@@ -6,6 +6,9 @@ module SAN
 # Provisioning namespace
 module Provisioning
   # Agent class, used for provisioning tasks
+  # 
+  # Under development - do not use
+  # TODO: need to properly test it
   class Agent < Brocade::SAN::Switch
     
     # Creates a Brocade::SAN::Provisioning::Agent instance and tests a connection.
@@ -317,7 +320,7 @@ module Provisioning
       when response.data.match(/trans_abort: there is an outstanding  transaction/)
         raise Agent::Error.new(Agent::Error::TRANS_NOTOWNER)
       else
-        error = response.data.split("\n").delete_if {|item| item.match(/^#{Agent::QUERY_PROMPT}/)}.join("\n")
+        error = response.data.split("\n").delete_if {|item| item.match(/^#{@prompt}/)}.join("\n")
         raise Agent::Error.new(error)
       end
     end
@@ -368,7 +371,7 @@ module Provisioning
       if response.data.split("\n").size==1
         cfg_save if @transaction.nil?
       else
-        error = response.data.split("\n").delete_if {|item| item.match(/^#{Agent::QUERY_PROMPT}/)}.join("\n")
+        error = response.data.split("\n").delete_if {|item| item.match(/^#{@prompt}/)}.join("\n")
         raise Agent::Error.new(error)
       end
       true

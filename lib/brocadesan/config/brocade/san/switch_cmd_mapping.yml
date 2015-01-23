@@ -1,84 +1,112 @@
 :name: 
     :cmd: switchshow
     :attr: switch_name
+    :format: string
 :state: 
     :cmd: switchshow
     :attr: switch_state
+    :format: string
 :mode: 
     :cmd: switchshow
     :attr: switch_mode
+    :format: string
 :role: 
     :cmd: switchshow
     :attr: switch_role
+    :format: string
 :domain: 
     :cmd: switchshow
     :attr: switch_domain
+    :format: integer
 :id: 
     :cmd: switchshow
     :attr: switch_id
+    :format: string
 :wwn: 
     :cmd: switchshow
     :attr: switch_wwn
+    :format: string
 :zoning_enabled: 
     :cmd: switchshow
     :attr: zoning_enabled
+    :format: boolean
 :active_config: 
     :cmd: switchshow
     :attr: active_config
+    :format: string
 :switch_beacon: 
     :cmd: switchshow
     :attr: switch_beacon
+    :format: string
 :fc_router: 
     :cmd: switchshow
     :attr: fc_router
+    :format: string
 :allow_xisl_use: 
     :cmd: switchshow
     :attr: allow_xisl_use
+    :format: string
 :ls_attributes: 
     :cmd: switchshow
     :attr: ls_attributes
+    :format: string
 :kernel: 
     :cmd: version
-    :attr: kernel    
+    :attr: kernel  
+    :format: string  
 :firmware: 
     :cmd: version
     :attr: fabric_os
+    :format: string
 :logical_switches:
     :cmd: "lscfg --show"
     :attr: created_switches
+    :format: array
 :ports:
     :cmd: "switchshow"
     :attr: ports
+    :format: array
 :aptpolicy:
     :cmd: "aptpolicy"
     :attr: current_policy
+    :format: integer
 :chassisname:
     :cmd: "chassisname"
     :attr: chassisname
+    :format: string
 :dls:
     :cmd: "dlsshow"
     :attr: dlsshow
+    :format: string
 :iod:
     :cmd: "iodshow"
     :attr: iodshow
+    :format: string
 :status:
     :cmd: "switchstatusshow"
     :attr: switch_state
+    :format: string
 :status_details:
     :cmd: "switchstatusshow"
     :attr: switchstatusshow
+    :format: string
 :ip:
     :cmd: "switchstatusshow"
     :attr: ip_address
+    :format: string
 :supportshow:
     :cmd: "supportshow"
     :attr: supportshow
+    :format: string
 :isls:
     :cmd: "islshow"
     :attr: isl_links
+    :format: array
 :trunks:
     :cmd: "trunkshow"
     :attr: trunk_links
+    :format: array
 :access_gateways:
     :cmd: "agshow"
     :attr: ag
+    :format: array

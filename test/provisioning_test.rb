@@ -1,18 +1,21 @@
 require 'brocadesan'
 require 'minitest/autorun'
-require 'output_reader'
+require 'output_helpers'
 
 module Brocade module SAN
   
 class ProvisioningTest < MiniTest::Test
   include OutputReader
+  include Mock::Net::SSH
+  patch_set
+  
   def setup
     init_dev
   end
   
   def init_dev
     @agent = Provisioning::Agent.new("test","test","test")
-    @response=Switch::Response.new
+    @response=new_mock_response
   end
   
   def test_device_setup
@@ -54,7 +57,7 @@ class ProvisioningTest < MiniTest::Test
           
           @agent.transaction do 
             assert_equal true, @agent.instance_variable_get(:@transaction)
-            assert_instance_of Net::SSH::Session, @agent.instance_variable_get(:@session)
+            assert_instance_of Mock::Net::SSH::Session, @agent.instance_variable_get(:@session)
             assert_equal 1, @agent.instance_variable_get(:@transaction_level)
             @agent.transaction do
               assert_equal 2, @agent.instance_variable_get(:@transaction_level)

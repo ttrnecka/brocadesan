@@ -191,6 +191,8 @@
         <div class="method-description">
         
         <p>domain of switch where wwn is online</p>
+
+<p>domain of 0 means the switch does not have any domain id</p>
         
         </div>
       </div>
@@ -261,7 +263,7 @@ internally mostly</p>
 
           
           <div class="method-source-code" id="verify_value-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/wwn.rb, line 35</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/wwn.rb, line 37</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">verify_value</span>(<span class="ruby-identifier">str</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Switch</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;Incorrect value format \&quot;#{str}\&quot;&quot;</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">str</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{VALUE_RULE}/</span>)
 <span class="ruby-keyword">end</span></pre>

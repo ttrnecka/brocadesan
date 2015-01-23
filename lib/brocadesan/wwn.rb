@@ -18,6 +18,8 @@ class Wwn
   attr_reader :port_index
   
   # domain of switch where wwn is online
+  #
+  # domain of 0 means the switch does not have any domain id
   
   attr_reader :domain_id
   

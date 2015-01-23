@@ -1,16 +1,25 @@
 require 'brocadesan'
 require 'minitest/autorun'
-require 'output_reader'
-#require 'net/ssh/test'
+require 'output_helpers'
 
 class DeviceTest < MiniTest::Test
+  include SshStoryWriter
+  include Mock::Net::SSH
+  patch_revert
+  
   def setup
     @device = TestDevice.new("test","test","test")
-    Net::SSH::set_error ""
+    #Net::SSH::set_error ""
   end
   
   def test_device_setup
     assert_instance_of TestDevice, @device
+  end
+  
+  def test_prompt
+    assert_equal @device.prompt, TestDevice::DEFAULT_QUERY_PROMPT
+    @new_device = TestDevice.new("test","test","test",:prompt => "$ ")
+    assert_equal @new_device.prompt, "$ "
   end
   
   def test_get_mode
@@ -27,51 +36,121 @@ class DeviceTest < MiniTest::Test
   def test_set_mode
     assert_equal "interactive", @device.set_mode("interactive")
     
+    assert_equal "interactive", @device.set_mode(:interactive)
+    
     assert_equal "script", @device.set_mode("script")
+    
+    assert_equal "script", @device.set_mode(:script)
     
     assert_equal "script", @device.set_mode("blabla")
   end
-  
-  def test_query
-    response=@device.query("test","test2")
-    assert_instance_of TestDevice::Response, response
-    assert_equal TestDevice::QUERY_PROMPT+"test\n"+Net::SSH::get_data+"\n"+TestDevice::QUERY_PROMPT+"test2\n"+Net::SSH::get_data+"\n", response.data
-    
-    Net::SSH::set_error "error"
-    exp = assert_raises TestDevice::Error do 
-      @device.query("test")
+
+  def test_session
+    #stub start with test connection coming from net/ssh/test
+    Net::SSH.stub :start, connection do
+      @device.session do 
+        assert_instance_of Net::SSH::Connection::Session, @device.instance_variable_get(:@session)
+        assert_equal 1, @device.instance_variable_get(:@session_level)
+        @device.session do
+          assert_equal 2, @device.instance_variable_get(:@session_level)
+        end
+        refute @device.instance_variable_get(:@session).closed?
+        assert_equal 1, @device.instance_variable_get(:@session_level)
+      end
     end
-    assert_equal Net::SSH::get_error+"\n", exp.message
+    assert @device.instance_variable_get(:@session).closed?
     
-  ensure
-    Net::SSH::set_error ""
+    # session can we called only with block, raises error otherwise
+    exp = assert_raises(SshDevice::Error) do
+      @device.session
+    end
+    assert_equal SshDevice::Error::SESSION_WTIHOUT_BLOCK, exp.message
   end
   
   def test_query_in_session
-    @device.session do 
-      response=@device.query("test")
-      assert_instance_of TestDevice::Response, response
-      assert_equal TestDevice::QUERY_PROMPT+"test\n"+Net::SSH::get_data+"\n", response.data
+    cmds = ["test"]
+    exp_response = write_non_interactive_story(cmds,["test_ok"],TestDevice::DEFAULT_QUERY_PROMPT)
+    Net::SSH.stub :start, connection do
+      @device.session do 
+        response=@device.query(cmds[0])
+        assert_instance_of TestDevice::Response, response
+        assert_equal exp_response, response.data
+      end
     end
   end
   
-  def test_session
-    @device.session do 
-      assert_instance_of Net::SSH::Session, @device.instance_variable_get(:@session)
-      assert_equal 1, @device.instance_variable_get(:@session_level)
-      @device.session do
-        assert_equal 2, @device.instance_variable_get(:@session_level)
-      end
-      refute @device.instance_variable_get(:@session).closed?
-      assert_equal 1, @device.instance_variable_get(:@session_level)
+  def test_interactive_query
+    cmds = ["cfgsave","y"]
+    replies = ["confirm? [y,n]"]
+    exp_response = write_interactive_story(cmds,replies,TestDevice::DEFAULT_QUERY_PROMPT)
+    
+    @device.set_mode("interactive")
+    # connection is net/ssh/test method
+    @device.instance_variable_set(:@session,connection)
+    
+    response=nil
+    assert_scripted do
+
+      response=@device.query("cfgsave","y")
+      
+      assert_equal exp_response, response.data
+    end    
+    assert_instance_of TestDevice::Response, response
+    
+    # response safety net test for infinite newline response
+    # create story with 150 newline commands
+    cmds = Array.new(150, "")
+    replies = Array.new(150,"confirm? [y,n]")
+    exp_response = write_interactive_story(cmds,replies,TestDevice::DEFAULT_QUERY_PROMPT)
+    
+    
+    # this is pure hack, this raises RuntimeError as the connection script is expecting 150 responses
+    # but there are only 100 if them as expected
+    # since the script did not match reality we had to assume this worked
+    # we do not get any response so we cannot check it precisly
+    # but we at least check the internal retries value
+    # not the best test but so far the best I came up with
+    
+    assert_raises RuntimeError do
+      # story contains 150 new line responses
+      # this closses the channel after 100
+      @device.query("")
     end
-    assert @device.instance_variable_get(:@session).closed?
+        
+    assert_equal 100, @device.instance_variable_get(:@retries)
+  end
+
+  def test_non_interactive_query
+    cmds = ["cfgshow","switchshow"]
+    replies = ["not_available","is_available"]
+    error = "cannot execute this"
+    # write non itneractive ssh story that should play out when running the query
+    exp_response = write_non_interactive_story(cmds,replies,TestDevice::DEFAULT_QUERY_PROMPT)
+    
+    # connection is net/ssh/test method
+    @device.instance_variable_set(:@session,connection)
+    response=nil
+    assert_scripted do
+
+      response=@device.query(*cmds)
+      
+      assert_equal exp_response, response.data
+    end
+    assert_instance_of TestDevice::Response, response
+    
+    #errors
+    # write story endig with error
+    exp_response = write_failed_simple_story(cmds[0],error,TestDevice::DEFAULT_QUERY_PROMPT)
+    exp = assert_raises TestDevice::Error do 
+      @device.query(cmds[0])
+    end
+    assert_equal "#{error}\n", exp.message
   end
 end
 
 class ResponseTest < MiniTest::Test
   def setup
-    @response = TestDevice::Response.new
+    @response = TestDevice::Response.new("> ")
   end
   
   def test_parse
@@ -80,70 +159,12 @@ class ResponseTest < MiniTest::Test
     @response.parse
     assert_equal a={:parsing_position=>"end"},  @response.parsed
   end
+  
+  def test_prompt
+    assert_equal @response.instance_variable_get(:@prompt), "> "
+  end
 end
 
 class TestDevice
   include SshDevice
-end
-
-module Net::SSH
-  @@data="Response"
-  @@error=""
-  @@channel="channel"
-  
-  def self.get_data
-    @@data
-  end
-  
-  def self.get_error
-    @@error
-  end
-  
-  def self.get_channel
-    @@channel
-  end
-
-  def self.set_data(x)
-    @@data=x
-  end
-  
-  def self.set_error(x)
-    @@error=x
-  end
-  
-  def self.set_channel(x)
-    @@channel=x
-  end
-  
-  def self.start(host, user, options={}, &block)
-    
-    if block
-      yield Session.new
-    else
-      return Session.new
-    end
-  end
-  
-  class Session 
-    def exec!(command, &block)
-      @data=Net::SSH::get_data.dup
-      @error=Net::SSH::get_error.dup
-      @ch=Net::SSH::get_channel.dup
-      
-      if block
-        block.call(@ch, :stdout, @data)
-        block.call(@ch, :stderr, @error)
-      else
-        $stdout.print(data)
-      end
-    end
-      
-    def close
-      @closed=true
-    end
-    
-    def closed?
-      @closed.nil? ? false : @closed
-    end
-  end
 end

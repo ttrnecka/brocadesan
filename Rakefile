@@ -1,4 +1,5 @@
 require 'rake/testtask'
+require 'rake/notes/rake_task'
 require 'rdoc/task'
 require 'yaml'
 
@@ -28,9 +29,12 @@ require 'yaml'
       hash.each do |method,v|
         doc+="##\n"
         doc+="# :method: #{method.to_s}\n"
+        doc+="# :call-seq:\n"
+        doc+="#   #{method.to_s}(forced=true)\n"
+        doc+="#\n"
         doc+="# If called with +true+ argument it will get the #{v[:attr]} from the switch instead of cache\n"
         doc+="#\n"
-        doc+="# Returns value in (string) format\n"
+        doc+="# Returns value in (#{v[:format]}) format\n"
         doc+="\n"
       end
       doc+="end\n"

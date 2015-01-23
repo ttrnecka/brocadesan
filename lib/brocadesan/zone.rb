@@ -25,8 +25,8 @@ class Zone
   # raises Switch::Error: Incorrect name format if not
   # this method is used internally mostly
     
-  def self.verify_name(str)
-    raise Switch::Error.new("Incorrect name format \"#{str}\"") if !str.match(/#{MEMBER_RULE}/i)
+  def self.verify_member_name(str)
+    raise Switch::Error.incorrect("#{str}") if !str.match(/#{MEMBER_RULE}/i)
   end
   
   # init method
@@ -47,7 +47,7 @@ class Zone
   # members of zones are aliases, wwns or D,I notation
   # +member+ is name of the member  
   def add_member(member)
-    Zone::verify_name(member)
+    Zone::verify_member_name(member)
     @members<<member
   end
   

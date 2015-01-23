@@ -70,7 +70,9 @@
 
   <ul class="link-list">
     
-    <li><a href="#method-c-verify_name">::verify_name</a>
+    <li><a href="#method-c-new">::new</a>
+    
+    <li><a href="#method-c-verify_member_name">::verify_member_name</a>
     
     <li><a href="#method-i-add_member">#add_member</a>
     
@@ -158,8 +160,11 @@
       
         <dt id="MEMBER_RULE">MEMBER_RULE
         
-        <dd class="description"><p>member naming rule member ca be WWN or Domain,Index port notation allowed
-examples:</p>
+        <dd class="description"><p>alias member naming rule (regular expresion)</p>
+
+<p>member can be WWN or Domain,Index port notation</p>
+
+<p>allowed examples:</p>
 
 <p>50:00:10:20:30:40:50:60</p>
 
@@ -198,10 +203,45 @@ examples:</p>
       <h3 class="section-header">Public Class Methods</h3>
 
     
-      <div id="method-c-verify_name" class="method-detail ">
+      <div id="method-c-new" class="method-detail ">
         
         <div class="method-heading">
-          <span class="method-name">verify_name</span><span
+          <span class="method-name">new</span><span
+            class="method-args">(name,opts={})</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>inititialize new alias with <code>name</code></p>
+
+<p><code>opts</code> reserved for future use</p>
+          
+
+          
+          <div class="method-source-code" id="new-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/alias.rb, line 23</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">name</span>,<span class="ruby-identifier">opts</span>={})
+  <span class="ruby-comment"># checked against alias name rule - not alias member</span>
+  <span class="ruby-constant">Switch</span><span class="ruby-operator">::</span><span class="ruby-identifier">verify_name</span>(<span class="ruby-identifier">name</span>)
+  <span class="ruby-ivar">@name</span>=<span class="ruby-identifier">name</span> 
+  <span class="ruby-ivar">@members</span>=[]
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- new-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- new-method -->
+
+    
+      <div id="method-c-verify_member_name" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">verify_member_name</span><span
             class="method-args">(str)</span>
           <span class="method-click-advice">click to toggle source</span>
         </div>
@@ -210,24 +250,27 @@ examples:</p>
         <div class="method-description">
           
           <p>verifies if <code>str</code> matches convetion defined in
-Alias::MEMBER_RULE raises Switch::Error: Incorrect name format if not this
-method is used internally mostly</p>
+Alias::MEMBER_RULE</p>
+
+<p>raises Switch::Error: Incorrect name format "<code>str</code>" if not</p>
+
+<p>this method is used mostly internally</p>
           
 
           
-          <div class="method-source-code" id="verify_name-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/alias.rb, line 22</span>
-<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">verify_name</span>(<span class="ruby-identifier">str</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Switch</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;Incorrect name format \&quot;#{str}\&quot;&quot;</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">str</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{MEMBER_RULE}/</span>)
+          <div class="method-source-code" id="verify_member_name-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/alias.rb, line 55</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">verify_member_name</span>(<span class="ruby-identifier">str</span>)
+  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Switch</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">incorrect</span>(<span class="ruby-identifier">str</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">str</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{MEMBER_RULE}/</span>)
 <span class="ruby-keyword">end</span></pre>
-          </div><!-- verify_name-source -->
+          </div><!-- verify_member_name-source -->
           
         </div>
 
         
 
         
-      </div><!-- verify_name-method -->
+      </div><!-- verify_member_name-method -->
 
     
     </section><!-- public-class-method-details -->
@@ -247,16 +290,20 @@ method is used internally mostly</p>
 
         <div class="method-description">
           
-          <p>add member to the object members of aliasese are WWNs or Domain,Index port
-notation <code>member</code> is name of the zone return all memebers,
-otherwises raises error</p>
+          <p>add new member to the alias</p>
+
+<p>members of aliases are WWNs or Domain,Index port notation</p>
+
+<p><code>member</code> is name of the zone</p>
+
+<p>return all members, otherwises raises error</p>
           
 
           
           <div class="method-source-code" id="add_member-source">
             <pre><span class="ruby-comment"># File lib/brocadesan/alias.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_member</span>(<span class="ruby-identifier">member</span>)
-  <span class="ruby-constant">Alias</span><span class="ruby-operator">::</span><span class="ruby-identifier">verify_name</span>(<span class="ruby-identifier">member</span>)
+  <span class="ruby-constant">Alias</span><span class="ruby-operator">::</span><span class="ruby-identifier">verify_member_name</span>(<span class="ruby-identifier">member</span>)
   <span class="ruby-ivar">@members</span><span class="ruby-operator">&lt;&lt;</span><span class="ruby-identifier">member</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- add_member-source -->
@@ -285,7 +332,7 @@ otherwises raises error</p>
 
           
           <div class="method-source-code" id="members-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/alias.rb, line 35</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/alias.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">members</span>
   <span class="ruby-ivar">@members</span>
 <span class="ruby-keyword">end</span></pre>
