@@ -37,6 +37,11 @@ class Wwn
   def self.verify_value(str)
     raise Switch::Error.new("Incorrect value format \"#{str}\"") if !str.match(/#{VALUE_RULE}/i)
   end
+  
+  # shadows value
+  def name
+    @value
+  end
    
   # init method
   #
@@ -49,6 +54,10 @@ class Wwn
     @port_index=port_index.to_i
     @symbol= !opts[:symbol].nil? ? opts[:symbol] : ""
   end  
+  
+  def to_s
+    @value
+  end
 end
 
 end; end

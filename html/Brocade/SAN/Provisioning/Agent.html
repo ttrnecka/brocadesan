@@ -72,15 +72,19 @@
     
     <li><a href="#method-c-create">::create</a>
     
-    <li><a href="#method-c-new">::new</a>
-    
     <li><a href="#method-i-abort_transaction">#abort_transaction</a>
+    
+    <li><a href="#method-i-alias_add">#alias_add</a>
     
     <li><a href="#method-i-alias_change">#alias_change</a>
     
     <li><a href="#method-i-alias_create">#alias_create</a>
     
     <li><a href="#method-i-alias_delete">#alias_delete</a>
+    
+    <li><a href="#method-i-alias_purge">#alias_purge</a>
+    
+    <li><a href="#method-i-alias_remove">#alias_remove</a>
     
     <li><a href="#method-i-cfg_add">#cfg_add</a>
     
@@ -92,19 +96,25 @@
     
     <li><a href="#method-i-cfg_remove">#cfg_remove</a>
     
-    <li><a href="#method-i-cfg_save">#cfg_save</a>
-    
     <li><a href="#method-i-check_for_running_transaction">#check_for_running_transaction</a>
     
     <li><a href="#method-i-exist-3F">#exist?</a>
     
+    <li><a href="#method-i-get_transaction">#get_transaction</a>
+    
     <li><a href="#method-i-transaction">#transaction</a>
+    
+    <li><a href="#method-i-zone_add">#zone_add</a>
     
     <li><a href="#method-i-zone_change">#zone_change</a>
     
     <li><a href="#method-i-zone_create">#zone_create</a>
     
     <li><a href="#method-i-zone_delete">#zone_delete</a>
+    
+    <li><a href="#method-i-zone_purge">#zone_purge</a>
+    
+    <li><a href="#method-i-zone_remove">#zone_remove</a>
     
   </ul>
 </nav>
@@ -139,6 +149,10 @@
   
     <li><a href="../../../Brocade/SAN/Provisioning/Agent/Error.html">Brocade::SAN::Provisioning::Agent::Error</a>
   
+    <li><a href="../../../Brocade/SAN/Provisioning/Agent/Transaction.html">Brocade::SAN::Provisioning::Agent::Transaction</a>
+  
+    <li><a href="../../../Brocade/SAN/Provisioning/Replies.html">Brocade::SAN::Provisioning::Replies</a>
+  
     <li><a href="../../../Brocade/SAN/Switch.html">Brocade::SAN::Switch</a>
   
     <li><a href="../../../Brocade/SAN/Switch/Error.html">Brocade::SAN::Switch::Error</a>
@@ -170,7 +184,24 @@
     
 <p><a href="Agent.html">Agent</a> class, used for provisioning tasks</p>
 
-<p>Under development - do not use TODO: need to properly test it</p>
+<p>Under development - do not use</p>
+
+<p>TODO: need to properly test it live</p>
+
+<p>TODO: add way the <a href="Agent.html#method-i-exist-3F">exist?</a> method
+collects data from cache instead of switch to speed up the procesing</p>
+
+<p>TODO: add transaction_lock method</p>
+
+<p>TODO: <a
+href="Agent.html#method-i-abort_transaction">#abort_transaction</a> should
+try to abort only abortable</p>
+
+<p>TODO: add auto enable mode to transaction</p>
+
+<p>TODO: <a href="Agent.html#method-i-zone_add">#zone_add</a> and <a
+href="Agent.html#method-i-zone_remove">#zone_remove</a> - allow direct D,P
+notation</p>
 
   </div><!-- description -->
 
@@ -204,7 +235,8 @@
         <div class="method-description">
           
           <p>Creates a <a href="Agent.html">Brocade::SAN::Provisioning::Agent</a>
-instance and tests a connection.</p>
+instance, tests a connection and test if user has enough rights for
+provisioning.  Raises <a href="Agent/Error.html">Error</a> otherwise</p>
 
 <p>Checks as well if the switch is virtual fabric enabled since that defines
 the way it will be queried further.</p>
@@ -212,9 +244,9 @@ the way it will be queried further.</p>
 
           
           <div class="method-source-code" id="create-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 17</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">create</span>(*<span class="ruby-identifier">params</span>)
-  <span class="ruby-identifier">agent</span>=<span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(*<span class="ruby-identifier">params</span>)
+  <span class="ruby-identifier">agent</span>=<span class="ruby-identifier">new</span>(*<span class="ruby-identifier">params</span>)
 <span class="ruby-keyword">end</span></pre>
           </div><!-- create-source -->
           
@@ -224,38 +256,6 @@ the way it will be queried further.</p>
 
         
       </div><!-- create-method -->
-
-    
-      <div id="method-c-new" class="method-detail ">
-        
-        <div class="method-heading">
-          <span class="method-name">new</span><span
-            class="method-args">(*params)</span>
-          <span class="method-click-advice">click to toggle source</span>
-        </div>
-        
-
-        <div class="method-description">
-          
-          
-          
-
-          
-          <div class="method-source-code" id="new-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 353</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(*<span class="ruby-identifier">params</span>)
-  <span class="ruby-keyword">super</span>(*<span class="ruby-identifier">params</span>)
-  <span class="ruby-ivar">@transaction</span>=<span class="ruby-keyword">nil</span>
-  <span class="ruby-ivar">@transaction_level</span>=<span class="ruby-value">0</span>
-<span class="ruby-keyword">end</span></pre>
-          </div><!-- new-source -->
-          
-        </div>
-
-        
-
-        
-      </div><!-- new-method -->
 
     
     </section><!-- public-class-method-details -->
@@ -275,23 +275,25 @@ the way it will be queried further.</p>
 
         <div class="method-description">
           
-          <p>aborts transaction returns <code>true</code> if transaction was aborted and
-<code>false</code> if there was no transaction to abort and raises error if
-not owner of the transaction</p>
+          <p>returns <code>true</code> if transaction was aborted and <code>false</code>
+if there was no transaction to abort and raises error if it is not owner of
+the transaction</p>
           
 
           
           <div class="method-source-code" id="abort_transaction-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 312</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 346</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">abort_transaction</span>
-  <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-string">&quot;cfgtransabort&quot;</span>)
+  <span class="ruby-identifier">response</span> = <span class="ruby-identifier">script_mode</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">query</span>(<span class="ruby-string">&quot;cfgtransabort&quot;</span>)
+  <span class="ruby-keyword">end</span>
   <span class="ruby-comment">#empty response is ok</span>
   <span class="ruby-keyword">case</span>
   <span class="ruby-keyword">when</span>  <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;\n&quot;</span>).<span class="ruby-identifier">size</span><span class="ruby-operator">==</span><span class="ruby-value">1</span>
     <span class="ruby-keyword">return</span> <span class="ruby-keyword">true</span>
-  <span class="ruby-keyword">when</span>  <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp">%rThere is no outstanding transaction/</span>)
+  <span class="ruby-keyword">when</span>  <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{Replies::NO_TRANSACTION}/</span>)
     <span class="ruby-keyword">return</span> <span class="ruby-keyword">false</span>
-  <span class="ruby-keyword">when</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp">%rtrans_abort: there is an outstanding  transaction/</span>)
+  <span class="ruby-keyword">when</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{Replies::OUTSTANDING_TRANSACTION}/</span>)
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRANS_NOTOWNER</span>)
   <span class="ruby-keyword">else</span>
     <span class="ruby-identifier">error</span> = <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;\n&quot;</span>).<span class="ruby-identifier">delete_if</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">item</span><span class="ruby-operator">|</span> <span class="ruby-identifier">item</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r^#{@prompt}/</span>)}.<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot;\n&quot;</span>)
@@ -308,6 +310,49 @@ not owner of the transaction</p>
       </div><!-- abort_transaction-method -->
 
     
+      <div id="method-i-alias_add" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">alias_add</span><span
+            class="method-args">(al,member)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Adds alias member to alias</p>
+
+<p>If started outside transaction block it runs as single command transaction,
+otherwise it is not commited when the command returns</p>
+
+<p><code>member</code> must be string matching WWN or D,P notation -&gt;
+matches Brocade::SAN::Alias::MEMBER_RULE</p>
+
+<p><code>al</code> must be <a href="../Alias.html">Alias</a> and must exist in
+switch configuration, the <code>member</code> does not need to, it has only
+to match the rule</p>
+
+<p>raises error if <code>al</code> does not exist, member does not match the
+rule, dirrefent transaction is running or response is unexpected</p>
+          
+
+          
+          <div class="method-source-code" id="alias_add-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 298</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_add</span>(<span class="ruby-identifier">al</span>,<span class="ruby-identifier">member</span>)
+  <span class="ruby-identifier">obj_add</span>(<span class="ruby-identifier">al</span>,<span class="ruby-constant">Alias</span>,<span class="ruby-identifier">member</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- alias_add-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- alias_add-method -->
+
+    
       <div id="method-i-alias_change" class="method-detail ">
         
         <div class="method-heading">
@@ -322,29 +367,30 @@ not owner of the transaction</p>
           <p>Changes alias and saves config</p>
 
 <p>If started outside transaction block it runs as single command transaction,
-otherwise it is not commited when the commqnd returns</p>
+otherwise it is not commited when the command returns</p>
 
 <p><code>al</code> must be of class <a href="../Alias.html">Alias</a>. alias
-with the name will be removed and it will be created anew as it is with all
-the members</p>
+with the <a
+href="../Alias.html#attribute-i-name">Brocade::SAN::Alias#name</a> will be
+removed and it will be created anew as it is with all the members defined
+in <code>al</code> instance</p>
 
-<p>raises error if alias does not exist or transaction is running or response
-is unexpected</p>
+<p>raises error if alias does not exist or different transaction is running or
+response is unexpected</p>
+
+<p>this is shorthand method that instead of modifiyng the alias removes the
+alias and recreates it</p>
+
+<p>use <a href="Agent.html#method-i-alias_remove">#alias_remove</a> and <a
+href="Agent.html#method-i-alias_add">#alias_add</a> if the above is not an
+option</p>
           
 
           
           <div class="method-source-code" id="alias_change-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 92</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 183</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_change</span>(<span class="ruby-identifier">al</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ALIAS_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">al</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Alias</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
-    <span class="ruby-keyword">self</span>.<span class="ruby-identifier">transaction</span> <span class="ruby-keyword">do</span>
-      <span class="ruby-identifier">alias_delete</span>(<span class="ruby-identifier">al</span>)
-      <span class="ruby-identifier">alias_create</span>(<span class="ruby-identifier">al</span>)
-    <span class="ruby-keyword">end</span>
-  <span class="ruby-keyword">end</span>
-  <span class="ruby-keyword">true</span>
+  <span class="ruby-identifier">obj_change</span> <span class="ruby-identifier">al</span>, <span class="ruby-constant">Alias</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- alias_change-source -->
           
@@ -370,26 +416,20 @@ is unexpected</p>
           <p>Creates alias and saves config</p>
 
 <p>If started outside transaction block it runs as single command transaction,
-otherwise it is not commited when the commqnd returns</p>
+otherwise it is not commited when the command returns</p>
 
 <p><code>al</code> must be of class <a href="../Alias.html">Alias</a>. It will
-be created as it is with all the members</p>
+be created as it is with all the members of <code>al</code> instance</p>
 
-<p>raises error if alias exists or transaction is running or response is
-unexpected</p>
+<p>raises error if alias exists or different transaction is running or
+response is unexpected</p>
           
 
           
           <div class="method-source-code" id="alias_create-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 55</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 96</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_create</span>(<span class="ruby-identifier">al</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ALIAS_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">al</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Alias</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
-    
-    <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;alicreate \&quot;#{al.name}\&quot;,\&quot;#{al.members.join(&quot;; &quot;)}\&quot;&quot;</span>)
-    <span class="ruby-identifier">validate_and_save</span>(<span class="ruby-identifier">response</span>)
-  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">obj_create</span> <span class="ruby-identifier">al</span>, <span class="ruby-constant">Alias</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- alias_create-source -->
           
@@ -412,29 +452,27 @@ unexpected</p>
 
         <div class="method-description">
           
-          <p>Removes alias and saves config</p>
+          <p>Deletes alias and saves config</p>
 
 <p>If started outside transaction block it runs as single command transaction,
-otherwise it is not commited when the commqnd returns</p>
+otherwise it is not commited when the command returns</p>
 
-<p><code>al</code> must be of class <a href="../Alias.html">Alias</a>. It will
-be created as it is with all the members</p>
+<p><code>al</code> must be of class <a href="../Alias.html">Alias</a>.</p>
 
 <p>raises error if alias does not exist or transaction is running or response
 is unexpected</p>
+
+<p>this is low level command and it only removes the alias</p>
+
+<p>it will not remove alias reference from zones, see Agent::<a
+href="Agent.html#method-i-alias_purge">alias_purge</a> that removes all</p>
           
 
           
           <div class="method-source-code" id="alias_delete-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 74</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 140</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_delete</span>(<span class="ruby-identifier">al</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ALIAS_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">al</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Alias</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
-    
-    <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;alidelete \&quot;#{al.name}\&quot;&quot;</span>)
-    <span class="ruby-identifier">validate_and_save</span>(<span class="ruby-identifier">response</span>)
-  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">obj_delete</span> <span class="ruby-identifier">al</span>, <span class="ruby-constant">Alias</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- alias_delete-source -->
           
@@ -446,47 +484,112 @@ is unexpected</p>
       </div><!-- alias_delete-method -->
 
     
-      <div id="method-i-cfg_add" class="method-detail ">
+      <div id="method-i-alias_purge" class="method-detail ">
         
         <div class="method-heading">
-          <span class="method-name">cfg_add</span><span
-            class="method-args">(cfg,zone)</span>
+          <span class="method-name">alias_purge</span><span
+            class="method-args">(al)</span>
           <span class="method-click-advice">click to toggle source</span>
         </div>
         
 
         <div class="method-description">
           
-          <p>Adds zone to configuration</p>
+          <p>Purges the <a href="../Alias.html">Alias</a> <code>al</code> completely,
+along with all references.</p>
+
+<p><code>al</code> must be instance of <a href="../Alias.html">Alias</a>.</p>
+
+<p>The method first removes the alias from all zones it is member of. Then
+deletes the alias and saves configuration.</p>
+          
+
+          
+          <div class="method-source-code" id="alias_purge-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 254</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_purge</span>(<span class="ruby-identifier">al</span>)
+   <span class="ruby-identifier">obj_purge</span>(<span class="ruby-identifier">al</span>,<span class="ruby-constant">Alias</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- alias_purge-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- alias_purge-method -->
+
+    
+      <div id="method-i-alias_remove" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">alias_remove</span><span
+            class="method-args">(al,member)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Removes member from alias <code>al</code></p>
 
 <p>If started outside transaction block it runs as single command transaction,
-otherwise it is not commited when the commqnd returns</p>
+otherwise it is not commited when the command returns</p>
 
-<p><code>zone</code> must be of class <a href="../Zone.html">Zone</a> and
-<code>cfg</code> of class <a
-href="../ZoneConfiguration.html">ZoneConfiguration</a>. It will be created
-as it is with all the members</p>
+<p><code>al</code> must be instance of <a href="../Alias.html">Alias</a> and
+<code>member</code> must match Alias::MEMBER_RULE</p>
 
-<p><a href="../Zone.html">Zone</a> members and zone configuration must exist</p>
+<p>raises error if alias does not exist, <code>member</code> does not match
+the rule or different transaction is running or response is unexpected</p>
+          
 
-<p>raises error if zone configuration does not exist or transaction is running
-or response is unexpected</p>
+          
+          <div class="method-source-code" id="alias_remove-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 210</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_remove</span>(<span class="ruby-identifier">al</span>,<span class="ruby-identifier">member</span>)
+  <span class="ruby-identifier">obj_remove</span>(<span class="ruby-identifier">al</span>,<span class="ruby-constant">Alias</span>,<span class="ruby-identifier">member</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- alias_remove-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- alias_remove-method -->
+
+    
+      <div id="method-i-cfg_add" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">cfg_add</span><span
+            class="method-args">(cfg,member)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Adds zone cofiguration member to zone configuration.</p>
+
+<p>If started outside transaction block it runs as single command transaction,
+otherwise it is not commited when the command returns.</p>
+
+<p><code>member</code> must be instance of <a href="../Zone.html">Zone</a> and
+<code>cfg</code> instance of class <a
+href="../ZoneConfiguration.html">ZoneConfiguration</a>.</p>
+
+<p><a href="../Zone.html">Zone</a> and zone configuration must both exist.</p>
+
+<p>Raises error if <code>cfg</code> or <code>member</code> do not exist or
+different transaction is running or response is unexpected.</p>
           
 
           
           <div class="method-source-code" id="cfg_add-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 262</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_add</span>(<span class="ruby-identifier">cfg</span>,<span class="ruby-identifier">zone</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFG_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">ZoneConfiguration</span>
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ZONE_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">zone</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Zone</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span>
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">does_not_exist</span>(<span class="ruby-node">&quot;Config #{cfg.name}&quot;</span>)) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">name</span>,<span class="ruby-value">:object</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value">:cfg</span>)
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">does_not_exist</span>(<span class="ruby-node">&quot;Zone #{zone.name}&quot;</span>)) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">zone</span>.<span class="ruby-identifier">name</span>,<span class="ruby-value">:object</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value">:zone</span>)
-    
-    <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;cfgadd \&quot;#{cfg.name}\&quot;, \&quot;#{zone.name}\&quot;&quot;</span>)
-    <span class="ruby-identifier">validate_and_save</span>(<span class="ruby-identifier">response</span>)
-  <span class="ruby-keyword">end</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 268</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_add</span>(<span class="ruby-identifier">cfg</span>,<span class="ruby-identifier">member</span>)
+  <span class="ruby-identifier">obj_add</span>(<span class="ruby-identifier">cfg</span>,<span class="ruby-constant">ZoneConfiguration</span>,<span class="ruby-identifier">member</span>)
 <span class="ruby-keyword">end</span></pre>
           </div><!-- cfg_add-source -->
           
@@ -509,36 +612,26 @@ or response is unexpected</p>
 
         <div class="method-description">
           
-          <p>Creates zone configuration and saves config</p>
+          <p>Creates zone configuration and saves fabric configuration.</p>
 
 <p>If started outside transaction block it runs as single command transaction,
-otherwise it is not commited when the commqnd returns</p>
+otherwise it is not commited when the command returns.</p>
 
 <p><code>cfg</code> must be of class <a
 href="../ZoneConfiguration.html">ZoneConfiguration</a>. It will be created
-as it is with all the members</p>
+as it is with all the members of <code>cfg</code>.</p>
 
-<p><a href="../Zone.html">Zone</a> members must exist</p>
+<p>Members must exist on the switch as zones.</p>
 
-<p>raises error if zone configuration exists or transaction is running or
-response is unexpected</p>
+<p>Raises error if +cfg already exists or some of the members do not exist or
+different transaction is running or response is unexpected.</p>
           
 
           
           <div class="method-source-code" id="cfg_create-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 218</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 124</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_create</span>(<span class="ruby-identifier">cfg</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFG_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">ZoneConfiguration</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
-    
-    <span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">members</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">member</span><span class="ruby-operator">|</span>
-      <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">does_not_exist</span>(<span class="ruby-node">&quot;Zone #{member}&quot;</span>)) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">member</span>,<span class="ruby-value">:object</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value">:zone</span>)
-    <span class="ruby-keyword">end</span>
-    
-    <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;cfgcreate \&quot;#{cfg.name}\&quot;,\&quot;#{cfg.members.join(&quot;; &quot;)}\&quot;&quot;</span>)
-    <span class="ruby-identifier">validate_and_save</span>(<span class="ruby-identifier">response</span>)
-  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">obj_create</span> <span class="ruby-identifier">cfg</span>, <span class="ruby-constant">ZoneConfiguration</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- cfg_create-source -->
           
@@ -561,30 +654,24 @@ response is unexpected</p>
 
         <div class="method-description">
           
-          <p>Removes zone configuration and saves config</p>
+          <p>Removes zone configuration and saves fabric configuration.</p>
 
 <p>If started outside transaction block it runs as single command transaction,
-otherwise it is not commited when the commqnd returns</p>
+otherwise it is not commited when the command returns.</p>
 
 <p><code>cfg</code> must be of class <a
-href="../ZoneConfiguration.html">ZoneConfiguration</a>. It will be created
-as it is with all the members</p>
+href="../ZoneConfiguration.html">ZoneConfiguration</a>. It will delete only
+zone config, keep the members intact.</p>
 
-<p>raises error if zone configuration does not exist or transaction is running
-or response is unexpected</p>
+<p>Raises error if zone configuration does not exist or different transaction
+is running or response is unexpected.</p>
           
 
           
           <div class="method-source-code" id="cfg_delete-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 241</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 167</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_delete</span>(<span class="ruby-identifier">cfg</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFG_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">ZoneConfiguration</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
-    
-    <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;cfgdelete \&quot;#{cfg.name}\&quot;&quot;</span>)
-    <span class="ruby-identifier">validate_and_save</span>(<span class="ruby-identifier">response</span>)
-  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">obj_delete</span> <span class="ruby-identifier">cfg</span>, <span class="ruby-constant">ZoneConfiguration</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- cfg_delete-source -->
           
@@ -607,29 +694,34 @@ or response is unexpected</p>
 
         <div class="method-description">
           
-          <p>enables config Raises erros if cancelled, nothing saved or unexpected
-result, otherwise returns true</p>
+          <p>Enables zoning configuration <code>cfg</code>.</p>
+
+<p><code>cfg</code> must be <a
+href="../ZoneConfiguration.html">ZoneConfiguration</a> instance, will only
+use it's name and ignore its members.</p>
+
+<p>Raises erros if cancelled, nothing saved or unexpected result, otherwise
+returns true.</p>
           
 
           
           <div class="method-source-code" id="cfg_enable-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 126</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 308</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_enable</span>(<span class="ruby-identifier">cfg</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFG_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">ZoneConfiguration</span>
   
-  <span class="ruby-identifier">set_mode</span>(<span class="ruby-string">&quot;interactive&quot;</span>)
+  <span class="ruby-identifier">response</span> = <span class="ruby-identifier">interactive_mode</span> <span class="ruby-keyword">do</span> 
+    <span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;cfgenable \&quot;#{cfg}\&quot;&quot;</span>,<span class="ruby-string">&quot;y&quot;</span>)
+  <span class="ruby-keyword">end</span>
   
-  <span class="ruby-identifier">response</span> = <span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;cfgenable #{cfg.name}&quot;</span>,<span class="ruby-string">&quot;y&quot;</span>)
   <span class="ruby-keyword">case</span>
-  <span class="ruby-keyword">when</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp">%rOperation cancelled/</span>)
+  <span class="ruby-keyword">when</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{Replies::OPERATION_CANCELLED}/</span>)
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFGSAVE_CANC</span>)
-  <span class="ruby-keyword">when</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp">%rUpdating flash/</span>)    
+  <span class="ruby-keyword">when</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{Replies::FLASH_UPDT}/</span>)    
     <span class="ruby-keyword">return</span> <span class="ruby-keyword">true</span>
   <span class="ruby-keyword">else</span>
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>)
   <span class="ruby-keyword">end</span>
-<span class="ruby-keyword">ensure</span>
-  <span class="ruby-identifier">set_mode</span>(<span class="ruby-string">&quot;script&quot;</span>)
 <span class="ruby-keyword">end</span></pre>
           </div><!-- cfg_enable-source -->
           
@@ -645,39 +737,31 @@ result, otherwise returns true</p>
         
         <div class="method-heading">
           <span class="method-name">cfg_remove</span><span
-            class="method-args">(cfg,zone)</span>
+            class="method-args">(cfg,member)</span>
           <span class="method-click-advice">click to toggle source</span>
         </div>
         
 
         <div class="method-description">
           
-          <p>Remove zone to configuration</p>
+          <p>Remove zone <code>member</code> from configuration <code>cfg</code>.</p>
 
 <p>If started outside transaction block it runs as single command transaction,
-otherwise it is not commited when the commqnd returns</p>
+otherwise it is not commited when the command returns.</p>
 
-<p><code>zone</code> must be of class <a href="../Zone.html">Zone</a> and
+<p><code>member</code> must be of class <a href="../Zone.html">Zone</a> and
 <code>cfg</code> of class <a
 href="../ZoneConfiguration.html">ZoneConfiguration</a>.</p>
 
-<p>raises error if zone configuration does not exist or transaction is running
-or response is unexpected</p>
+<p>Raises error if <code>cfg</code> does not exist or different transaction is
+running or response is unexpected.</p>
           
 
           
           <div class="method-source-code" id="cfg_remove-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 283</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_remove</span>(<span class="ruby-identifier">cfg</span>,<span class="ruby-identifier">zone</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFG_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">ZoneConfiguration</span>
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ZONE_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">zone</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Zone</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">does_not_exist</span>(<span class="ruby-node">&quot;Config #{cfg.name}&quot;</span>)) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">cfg</span>.<span class="ruby-identifier">name</span>,<span class="ruby-value">:object</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value">:cfg</span>)
-    
-    <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;cfgremove \&quot;#{cfg.name}\&quot;, \&quot;#{zone.name}\&quot;&quot;</span>)
-    <span class="ruby-identifier">validate_and_save</span>(<span class="ruby-identifier">response</span>)
-  <span class="ruby-keyword">end</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 234</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_remove</span>(<span class="ruby-identifier">cfg</span>,<span class="ruby-identifier">member</span>)
+  <span class="ruby-identifier">obj_remove</span>(<span class="ruby-identifier">cfg</span>,<span class="ruby-constant">ZoneConfiguration</span>,<span class="ruby-identifier">member</span>)
 <span class="ruby-keyword">end</span></pre>
           </div><!-- cfg_remove-source -->
           
@@ -687,51 +771,6 @@ or response is unexpected</p>
 
         
       </div><!-- cfg_remove-method -->
-
-    
-      <div id="method-i-cfg_save" class="method-detail ">
-        
-        <div class="method-heading">
-          <span class="method-name">cfg_save</span><span
-            class="method-args">()</span>
-          <span class="method-click-advice">click to toggle source</span>
-        </div>
-        
-
-        <div class="method-description">
-          
-          <p>Saves config Raises erros if cancelled, nothing saved or unexpected result,
-otherwise returns true</p>
-          
-
-          
-          <div class="method-source-code" id="cfg_save-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 106</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">cfg_save</span>
-  <span class="ruby-identifier">set_mode</span>(<span class="ruby-string">&quot;interactive&quot;</span>)
-  
-  <span class="ruby-identifier">response</span> = <span class="ruby-identifier">query</span>(<span class="ruby-string">&quot;cfgsave&quot;</span>,<span class="ruby-string">&quot;y&quot;</span>)
-  <span class="ruby-keyword">case</span>
-  <span class="ruby-keyword">when</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp">%rOperation cancelled/</span>)
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFGSAVE_CANC</span>)
-  <span class="ruby-keyword">when</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp">%rNothing changed: nothing to save, returning/</span>)
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">CFGSAVE_NOCHANGE</span>)
-  <span class="ruby-keyword">when</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp">%rUpdating flash/</span>)    
-    <span class="ruby-keyword">return</span> <span class="ruby-keyword">true</span>
-  <span class="ruby-keyword">else</span>
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>)
-  <span class="ruby-keyword">end</span>
-<span class="ruby-keyword">ensure</span>
-  <span class="ruby-identifier">set_mode</span>(<span class="ruby-string">&quot;script&quot;</span>)
-<span class="ruby-keyword">end</span></pre>
-          </div><!-- cfg_save-source -->
-          
-        </div>
-
-        
-
-        
-      </div><!-- cfg_save-method -->
 
     
       <div id="method-i-check_for_running_transaction" class="method-detail ">
@@ -745,21 +784,24 @@ otherwise returns true</p>
 
         <div class="method-description">
           
-          <p>Check if there is zoning transaction in progress</p>
+          <p>Check if there is different zoning transaction in progress.</p>
 
-<p>Returns <code>true</code> or <code>false</code></p>
+<p>Returns <code>true</code> or <code>false</code>.</p>
+
+<p>if started in within transactino block it will simply return false.</p>
           
 
           
           <div class="method-source-code" id="check_for_running_transaction-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 298</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 330</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">check_for_running_transaction</span>
-  <span class="ruby-comment"># ignore thi command when within transaction block</span>
-  <span class="ruby-comment"># as this command is started at the beginign of transaction</span>
+  <span class="ruby-comment"># ignore this command when within transaction block</span>
+  <span class="ruby-comment"># as this command is started at the begining of transaction</span>
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">false</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@transaction</span>
-  
-  <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-string">&quot;cfgtransshow&quot;</span>)
-  <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp">%rThere is no outstanding zoning transaction/</span>) <span class="ruby-operator">?</span> <span class="ruby-keyword">false</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>
+  <span class="ruby-identifier">response</span> = <span class="ruby-identifier">script_mode</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">query</span>(<span class="ruby-string">&quot;cfgtransshow&quot;</span>)
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{Replies::NO_ZONING_TRANSACTION}/</span>) <span class="ruby-operator">?</span> <span class="ruby-keyword">false</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- check_for_running_transaction-source -->
           
@@ -782,18 +824,19 @@ otherwise returns true</p>
 
         <div class="method-description">
           
-          <p>Check if object exists. Finds even objects not stored in memory</p>
+          <p>Checks if object exists in fabric. Finds even objects not stored in memory
+but as well object created in open transaction.</p>
 
 <p><code>str</code> is name of the object</p>
 
 <p><code>opts</code> :object =&gt; :zone, :alias, :cfg</p>
 
-<p>if no :object is pecified :zone is used by default</p>
+<p>if no :object is specified :zone is used by default</p>
           
 
           
           <div class="method-source-code" id="exist-3F-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 336</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 372</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">str</span>,<span class="ruby-identifier">opts</span>={})
   <span class="ruby-identifier">obj</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>].<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> [<span class="ruby-value">:zone</span>,<span class="ruby-value">:alias</span>,<span class="ruby-value">:cfg</span>].<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>]) <span class="ruby-operator">?</span> <span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>] <span class="ruby-operator">:</span> <span class="ruby-value">:zone</span>
   <span class="ruby-identifier">cmd</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">obj</span>
@@ -805,8 +848,10 @@ otherwise returns true</p>
     <span class="ruby-string">&quot;cfgshow&quot;</span>
   <span class="ruby-keyword">end</span>  
   
-  <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;#{cmd} \&quot;#{str}\&quot;&quot;</span>)
-  <span class="ruby-keyword">return</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp">%rdoes not exist/</span>) <span class="ruby-operator">?</span> <span class="ruby-keyword">false</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>
+  <span class="ruby-identifier">response</span> = <span class="ruby-identifier">script_mode</span> <span class="ruby-keyword">do</span> 
+    <span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;#{cmd} \&quot;#{str}\&quot;&quot;</span>)
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">data</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{Replies::DOES_NOT_EXIST}/</span>) <span class="ruby-operator">?</span> <span class="ruby-keyword">false</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">true</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- exist-3F-source -->
           
@@ -816,6 +861,45 @@ otherwise returns true</p>
 
         
       </div><!-- exist-3F-method -->
+
+    
+      <div id="method-i-get_transaction" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">get_transaction</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Queries the agent for ongoing transaction.</p>
+
+<p>Retruns <a href="Agent/Transaction.html">Transaction</a> instance or false
+if there is no transaction</p>
+          
+
+          
+          <div class="method-source-code" id="get_transaction-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 51</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">get_transaction</span>
+  <span class="ruby-identifier">response</span> = <span class="ruby-identifier">script_mode</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">query</span>(<span class="ruby-string">&quot;cfgtransshow&quot;</span>)
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">trans</span>=<span class="ruby-constant">Transaction</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">cfg_transaction</span>)
+  <span class="ruby-comment"># TODO: move this to response parser</span>
+  <span class="ruby-comment"># get transaction</span>
+  <span class="ruby-identifier">trans</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- get_transaction-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- get_transaction-method -->
 
     
       <div id="method-i-transaction" class="method-detail ">
@@ -829,22 +913,23 @@ otherwise returns true</p>
 
         <div class="method-description">
           
-          <p>creates a transaction</p>
+          <p>Opens a provisioning transaction.</p>
 
-<p>transaction runs in 1 session</p>
+<p><a href="Agent/Transaction.html">Transaction</a> runs in 1 session.</p>
 
-<p>Command allows transaction within transaction</p>
+<p>Command allows transaction within transaction.</p>
 
-<p><a href="Agent.html#method-i-cfg_save">#cfg_save</a> will be run a the end
-if the transaction is ok</p>
+<p>cfg_save will be run at the end of the transaction is there was no error
+raised and this is the top-most transaction block.</p>
           
 
           
           <div class="method-source-code" id="transaction-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 29</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 69</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">transaction</span>
+  <span class="ruby-ivar">@transaction_level</span><span class="ruby-operator">||=</span><span class="ruby-value">0</span>
   <span class="ruby-ivar">@transaction_level</span><span class="ruby-operator">+=</span><span class="ruby-value">1</span>
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
+  <span class="ruby-identifier">raise_if_transaction_running</span>
   <span class="ruby-ivar">@transaction</span> = <span class="ruby-keyword">true</span>
   <span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span>
     <span class="ruby-keyword">begin</span>
@@ -869,6 +954,52 @@ if the transaction is ok</p>
       </div><!-- transaction-method -->
 
     
+      <div id="method-i-zone_add" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">zone_add</span><span
+            class="method-args">(zone,member)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Adds zone <code>member</code> to <code>zone</code>.</p>
+
+<p>If started outside transaction block it runs as single command transaction,
+otherwise it is not commited when the command returns</p>
+
+<p><code>member</code> must be of class <a href="../Alias.html">Alias</a> or
+<a href="../Wwn.html">Wwn</a> and <code>zone</code> of class <a
+href="../Zone.html">Zone</a>.</p>
+
+<p><a href="../Zone.html">Zone</a> and member must exist. Exception is if
+<code>member</code> is <a href="../Wwn.html">Wwn</a>.</p>
+
+<p>Raises error if zone or member does not exist or transaction is running or
+response is unexpected.</p>
+
+<p>Note: does not accept direct D,P notation, but accept D,P notation in <a
+href="../Alias.html">Alias</a>.</p>
+          
+
+          
+          <div class="method-source-code" id="zone_add-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 284</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">zone_add</span>(<span class="ruby-identifier">zone</span>,<span class="ruby-identifier">member</span>)
+  <span class="ruby-identifier">obj_add</span>(<span class="ruby-identifier">zone</span>,<span class="ruby-constant">Zone</span>,<span class="ruby-identifier">member</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- zone_add-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- zone_add-method -->
+
+    
       <div id="method-i-zone_change" class="method-detail ">
         
         <div class="method-heading">
@@ -880,32 +1011,27 @@ if the transaction is ok</p>
 
         <div class="method-description">
           
-          <p>Changes zone and saves config</p>
+          <p>Changes <code>zone</code> and saves config.</p>
 
 <p>If started outside transaction block it runs as single command transaction,
-otherwise it is not commited when the commqnd returns</p>
+otherwise it is not commited when the command returns.</p>
 
 <p><code>zone</code> must be of class <a href="../Zone.html">Zone</a>.
 <code>zone</code> with the name will be removed and it will be created anew
-as it is with all the members</p>
+as it is with all the <code>zone</code> members.</p>
 
-<p>raises error if alias does not exist or transaction is running or response
-is unexpected</p>
+<p>Raises error if <code>member</code> does not exist (WWN and D,P members are
+exception) or different transaction is running or response is unexpected.</p>
+
+<p>This is shorthand method that instead of modifiyng the zone removes the
+zone and then recreates it.</p>
           
 
           
           <div class="method-source-code" id="zone_change-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 196</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 198</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">zone_change</span>(<span class="ruby-identifier">zone</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ZONE_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">zone</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Zone</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
-    <span class="ruby-keyword">self</span>.<span class="ruby-identifier">transaction</span> <span class="ruby-keyword">do</span>
-      <span class="ruby-identifier">zone_delete</span>(<span class="ruby-identifier">zone</span>)
-      <span class="ruby-identifier">zone_create</span>(<span class="ruby-identifier">zone</span>)
-    <span class="ruby-keyword">end</span>
-  <span class="ruby-keyword">end</span>
-  <span class="ruby-keyword">true</span>
+  <span class="ruby-identifier">obj_change</span> <span class="ruby-identifier">zone</span>, <span class="ruby-constant">Zone</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- zone_change-source -->
           
@@ -928,37 +1054,26 @@ is unexpected</p>
 
         <div class="method-description">
           
-          <p>Creates zone and saves config</p>
+          <p>Creates <code>zone</code> and saves config.</p>
 
 <p>If started outside transaction block it runs as single command transaction,
-otherwise it is not commited when the commqnd returns</p>
+otherwise it is not commited when the command returns.</p>
 
 <p><code>zone</code> must be of class <a href="../Zone.html">Zone</a>. It will
-be created as it is with all the members</p>
+be created as it is with all the <code>zone</code> members.</p>
 
-<p><a href="../Alias.html">Alias</a> members must exist</p>
+<p><code>members</code> must exist. Exaception is members matching WWN and D,P
+notation.</p>
 
-<p>raises error if zone exists or transaction is running or response is
-unexpected</p>
+<p>Raises error if <code>zone</code> exists already or different transaction
+is running or response is unexpected.</p>
           
 
           
           <div class="method-source-code" id="zone_create-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 154</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 110</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">zone_create</span>(<span class="ruby-identifier">zone</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ZONE_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">zone</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Zone</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
-    
-    <span class="ruby-identifier">zone</span>.<span class="ruby-identifier">members</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">member</span><span class="ruby-operator">|</span>
-      <span class="ruby-comment"># do not check if WWNs exist</span>
-      <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">member</span>.<span class="ruby-identifier">match</span>(<span class="ruby-node">%r#{Alias::MEMBER_RULE}/</span>)
-      <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">does_not_exist</span>(<span class="ruby-node">&quot;Alias #{member}&quot;</span>)) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">member</span>,<span class="ruby-value">:object</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value">:alias</span>)
-    <span class="ruby-keyword">end</span>
-       
-    <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;zonecreate \&quot;#{zone.name}\&quot;,\&quot;#{zone.members.join(&quot;; &quot;)}\&quot;&quot;</span>)
-    <span class="ruby-identifier">validate_and_save</span>(<span class="ruby-identifier">response</span>)
-  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">obj_create</span> <span class="ruby-identifier">zone</span>, <span class="ruby-constant">Zone</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- zone_create-source -->
           
@@ -981,29 +1096,26 @@ unexpected</p>
 
         <div class="method-description">
           
-          <p>Removes zone and saves config</p>
+          <p>Removes <code>zone</code> and saves config.</p>
 
 <p>If started outside transaction block it runs as single command transaction,
-otherwise it is not commited when the commqnd returns</p>
+otherwise it is not commited when the command returns.</p>
 
-<p><code>zone</code> must be of class <a href="../Zone.html">Zone</a>. It will
-be created as it is with all the members</p>
+<p><code>zone</code> must be of class <a href="../Zone.html">Zone</a>.</p>
 
-<p>raises error if alias does not exist or transaction is running or response
-is unexpected</p>
+<p>Raises error if <code>zone</code> does not exist or different transaction
+is running or response is unexpected.</p>
+
+<p>This is low level command, it will remove the <code>zone</code> record but
+not zone references from zone configurations, use <a
+href="Agent.html#method-i-zone_purge">zone_purge</a> for this purpose.</p>
           
 
           
           <div class="method-source-code" id="zone_delete-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 178</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 155</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">zone_delete</span>(<span class="ruby-identifier">zone</span>)
-  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">ZONE_BAD</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">zone</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Zone</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">session</span> <span class="ruby-keyword">do</span> 
-    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">TRNS_IPRG</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">check_for_running_transaction</span>
-    
-    <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-node">&quot;zonedelete \&quot;#{zone.name}\&quot;&quot;</span>)
-    <span class="ruby-identifier">validate_and_save</span>(<span class="ruby-identifier">response</span>)
-  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">obj_delete</span> <span class="ruby-identifier">zone</span>, <span class="ruby-constant">Zone</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- zone_delete-source -->
           
@@ -1013,6 +1125,81 @@ is unexpected</p>
 
         
       </div><!-- zone_delete-method -->
+
+    
+      <div id="method-i-zone_purge" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">zone_purge</span><span
+            class="method-args">(zone)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Purges the <a href="../Zone.html">Zone</a> <code>zone</code> completely,
+along with all references.</p>
+
+<p><code>zone</code> must me instance of <a href="../Zone.html">Zone</a>. The
+method first removes the zone from all zone configurations it is member of.
+Then deletes the zone and saves configuration.</p>
+          
+
+          
+          <div class="method-source-code" id="zone_purge-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 244</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">zone_purge</span>(<span class="ruby-identifier">zone</span>)
+  <span class="ruby-identifier">obj_purge</span>(<span class="ruby-identifier">zone</span>,<span class="ruby-constant">Zone</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- zone_purge-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- zone_purge-method -->
+
+    
+      <div id="method-i-zone_remove" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">zone_remove</span><span
+            class="method-args">(zone,member)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Remove <code>member</code> from <code>zone</code>.</p>
+
+<p>If started outside transaction block it runs as single command transaction,
+otherwise it is not commited when the command returns.</p>
+
+<p><code>zone</code> must be of class <a href="../Zone.html">Zone</a> and
+<code>member</code> of class <a href="../Alias.html">Alias</a> or <a
+href="../Wwn.html">Wwn</a>. Do not support D,P notation yet.</p>
+
+<p>Raises error if zone does not exist or different transaction is running or
+response is unexpected.</p>
+          
+
+          
+          <div class="method-source-code" id="zone_remove-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 222</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">zone_remove</span>(<span class="ruby-identifier">zone</span>,<span class="ruby-identifier">member</span>)
+  <span class="ruby-identifier">obj_remove</span>(<span class="ruby-identifier">zone</span>,<span class="ruby-constant">Zone</span>,<span class="ruby-identifier">member</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- zone_remove-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- zone_remove-method -->
 
     
     </section><!-- public-instance-method-details -->

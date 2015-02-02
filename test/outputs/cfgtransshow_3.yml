@@ -1,0 +1,4 @@
+:cfg_transaction:
+ :id: "0xfffff0"
+ :abortable: false
+:parsing_position: end

@@ -57,6 +57,7 @@ module SshDevice
   # +mode+: interactive or script
   #
   # interactive - used to do interactive queries in scripted manner by providing all responses in advance, see #query
+  
   def set_mode(mode)
     @opts[:interactive] = mode.to_s == "interactive" ? true : false
     get_mode
@@ -115,21 +116,50 @@ module SshDevice
   #     device.version
   #   end
   # 
-  # Raises SshDevice::Error if run without block
-  def session
-    raise self.class::Error.new(self.class::Error::SESSION_WTIHOUT_BLOCK) if !block_given?
-    @session_level+=1
-    if !session_exist?
-      @session=Net::SSH.start @address, @user, :password=>@password
-    end 
-    yield
-    
-  ensure
-    @session_level-=1
-    @session.close if @session && @session_level==0
+  # Must receive block, raises SshDevice::Error otherwise
+  def session(&block)
+    raise Error.no_block if !block_given?
+    begin 
+      @session_level+=1 
+      if !session_exist?
+        @session=Net::SSH.start @address, @user, :password=>@password
+      end
+      yield
+    rescue => e
+      raise e
+    ensure
+      @session_level-=1
+      @session.close if @session && @session_level==0 && !@session.closed?
+    end
+  end
+  
+  # Defines a block of code to run in script mode
+  #
+  # the mode will be reverted back to initial mode after leaving the block
+  def script_mode(&block)
+    run_in_mode :script, &block
+  end
+  
+  # Defines a block of code to run in interactive mode
+  #
+  # the mode will be reverted back to initial mode after leaving the block
+  def interactive_mode(&block)
+    run_in_mode :interactive, &block
   end
   
   private
+  
+  def run_in_mode(mode,&block)
+    old_mode = get_mode
+    set_mode mode
+    begin
+      yield
+    rescue => e
+      raise e  
+    ensure
+      set_mode old_mode
+    end
+  end
   
   def session_exist?
     @session && !@session.closed?
@@ -259,5 +289,8 @@ module SshDevice
   # Class using for raising specific errors
   class Error < StandardError; 
     SESSION_WTIHOUT_BLOCK = "Error: Session can run only with block" 
+    def self.no_block
+      self.new(SESSION_WTIHOUT_BLOCK)
+    end
   end
 end

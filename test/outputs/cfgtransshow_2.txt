@@ -1,0 +1,3 @@
+> cfgtransshow
+Current transaction token is 215468647
+It is abortable

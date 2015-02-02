@@ -1,0 +1,3 @@
+> cfgtransshow
+Current transaction token is 0xfffff0
+It is not abortable

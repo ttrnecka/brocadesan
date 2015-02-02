@@ -99,6 +99,8 @@
     
     <li><a href="#method-i-aptpolicy">#aptpolicy</a>
     
+    <li><a href="#method-i-cfg_transaction">#cfg_transaction</a>
+    
     <li><a href="#method-i-chassisname">#chassisname</a>
     
     <li><a href="#method-i-dls">#dls</a>
@@ -116,6 +118,8 @@
     <li><a href="#method-i-find_alias">#find_alias</a>
     
     <li><a href="#method-i-find_aliases">#find_aliases</a>
+    
+    <li><a href="#method-i-find_by_member">#find_by_member</a>
     
     <li><a href="#method-i-find_wwn">#find_wwn</a>
     
@@ -209,6 +213,10 @@
     <li><a href="../../Brocade/SAN/Provisioning/Agent.html">Brocade::SAN::Provisioning::Agent</a>
   
     <li><a href="../../Brocade/SAN/Provisioning/Agent/Error.html">Brocade::SAN::Provisioning::Agent::Error</a>
+  
+    <li><a href="../../Brocade/SAN/Provisioning/Agent/Transaction.html">Brocade::SAN::Provisioning::Agent::Transaction</a>
+  
+    <li><a href="../../Brocade/SAN/Provisioning/Replies.html">Brocade::SAN::Provisioning::Replies</a>
   
     <li><a href="../../Brocade/SAN/Switch.html">Brocade::SAN::Switch</a>
   
@@ -663,6 +671,43 @@ from the switch instead of cache</p>
       </div><!-- aptpolicy-method -->
 
     
+      <div id="method-i-cfg_transaction" class="method-detail ">
+        
+        
+        <div class="method-heading">
+          <span class="method-callseq">
+            cfg_transaction(forced=true)
+          </span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+        
+
+        <div class="method-description">
+          
+          <p>If called with <code>true</code> argument it will get the <a
+href="Switch.html#method-i-cfg_transaction">#cfg_transaction</a> from the
+switch instead of cache</p>
+
+<p>Returns value in (hash) format</p>
+          
+
+          
+          <div class="method-source-code" id="cfg_transaction-source">
+            <pre><span class="ruby-comment"># File lib/meta_methods.rb, line 263</span>
+</pre>
+          </div><!-- cfg_transaction-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- cfg_transaction-method -->
+
+    
       <div id="method-i-chassisname" class="method-detail ">
         
         
@@ -911,11 +956,14 @@ not confirmed it will not find it.</p>
           <div class="method-source-code" id="find-source">
             <pre><span class="ruby-comment"># File lib/brocadesan/switch.rb, line 271</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">find</span>(<span class="ruby-identifier">str</span>,<span class="ruby-identifier">opts</span>={})
+  <span class="ruby-comment"># do not change the following 3 lines without writing test for it     </span>
   <span class="ruby-identifier">obj</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>].<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> [<span class="ruby-value">:zone</span>,<span class="ruby-value">:alias</span>].<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>]) <span class="ruby-operator">?</span> <span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>] <span class="ruby-operator">:</span> <span class="ruby-value">:zone</span>
   <span class="ruby-identifier">mode</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">opts</span>[<span class="ruby-value">:find_mode</span>].<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> [<span class="ruby-value">:partial</span>,<span class="ruby-value">:exact</span>].<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">opts</span>[<span class="ruby-value">:find_mode</span>]) <span class="ruby-operator">?</span> <span class="ruby-identifier">opts</span>[<span class="ruby-value">:find_mode</span>] <span class="ruby-operator">:</span> <span class="ruby-value">:exact</span>
-  <span class="ruby-identifier">grep_exp</span> = <span class="ruby-identifier">mode</span><span class="ruby-operator">==</span><span class="ruby-value">:exact</span> <span class="ruby-operator">?</span> <span class="ruby-node">&quot; | grep -i -E ^#{obj}\..*#{str}:&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-node">&quot; | grep -i -E ^#{obj}\..*#{str}&quot;</span>  
+  <span class="ruby-identifier">grep_exp</span> = <span class="ruby-identifier">mode</span><span class="ruby-operator">==</span><span class="ruby-value">:exact</span> <span class="ruby-operator">?</span> <span class="ruby-node">&quot; | grep -i -E ^#{obj}\.#{str}:&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-node">&quot; | grep -i -E ^#{obj}\..*#{str}&quot;</span>  
   
-  <span class="ruby-identifier">response</span>=<span class="ruby-identifier">query</span>(<span class="ruby-string">&quot;configshow&quot;</span><span class="ruby-operator">+</span><span class="ruby-identifier">grep_exp</span>)
+  <span class="ruby-identifier">response</span> = <span class="ruby-identifier">script_mode</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">query</span>(<span class="ruby-string">&quot;configshow&quot;</span><span class="ruby-operator">+</span><span class="ruby-identifier">grep_exp</span>)
+  <span class="ruby-keyword">end</span>
   <span class="ruby-identifier">response</span>.<span class="ruby-identifier">parse</span>
   
   <span class="ruby-comment">#output of configshow is stored to find_results</span>
@@ -1009,6 +1057,98 @@ exists, <code>nil</code> otherwise</p>
 
         
       </div><!-- find_aliases-method -->
+
+    
+      <div id="method-i-find_by_member" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">find_by_member</span><span
+            class="method-args">(str,opts={})</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>finds configuration objects that have member specified by <code>str</code>.
+Case insensitive. If the <code>object</code> option is not specified it
+searches :zone objects. It finds only saved objects. If the object was
+created but the transaction is not confirmed it will not find it.</p>
+
+<p><code>opts</code></p>
+<dl class="rdoc-list label-list"><dt>:object
+<dd>
+<p>:all (default) - finds all objects (zones, configs, aliases)</p>
+
+<p>:aliases - finds aliases</p>
+
+<p>:zones - finds zones</p>
+</dd><dt>:find_mode
+<dd>
+<p>:partial - find partial matches</p>
+
+<p>:exact(default) - finds exact matches</p>
+</dd></dl>
+
+<p>Example:</p>
+
+<p>switch.find_by_member("zone1",:object=&gt;:cfg)</p>
+
+<p>Note:</p>
+
+<p><a href="Zone.html">Zone</a> can be only members of zone configuration and
+alias can be only members of zones so finding object that have them as
+members works with default :all :object. However WWNs can be part both of
+zones and aliases so that is why there is option to speficy the object</p>
+          
+
+          
+          <div class="method-source-code" id="find_by_member-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/switch.rb, line 324</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">find_by_member</span>(<span class="ruby-identifier">str</span>,<span class="ruby-identifier">opts</span>={})
+  <span class="ruby-identifier">obj</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>].<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> [<span class="ruby-value">:zone</span>,<span class="ruby-value">:alias</span>,<span class="ruby-value">:all</span>].<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>]) <span class="ruby-operator">?</span> <span class="ruby-identifier">opts</span>[<span class="ruby-value">:object</span>] <span class="ruby-operator">:</span> <span class="ruby-value">:all</span>
+  <span class="ruby-identifier">obj</span> = <span class="ruby-string">&quot;zone|alias|cfg&quot;</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">obj</span><span class="ruby-operator">==</span><span class="ruby-value">:all</span>
+  <span class="ruby-identifier">mode</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">opts</span>[<span class="ruby-value">:find_mode</span>].<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> [<span class="ruby-value">:partial</span>,<span class="ruby-value">:exact</span>].<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">opts</span>[<span class="ruby-value">:find_mode</span>]) <span class="ruby-operator">?</span> <span class="ruby-identifier">opts</span>[<span class="ruby-value">:find_mode</span>] <span class="ruby-operator">:</span> <span class="ruby-value">:exact</span>
+  <span class="ruby-identifier">grep_exp</span> = <span class="ruby-node">&quot; | grep -i -E \&quot;^#{obj}\.\&quot;&quot;</span>
+  <span class="ruby-identifier">grep_exp</span> <span class="ruby-operator">+=</span> <span class="ruby-identifier">mode</span><span class="ruby-operator">==</span><span class="ruby-value">:exact</span> <span class="ruby-operator">?</span> <span class="ruby-node">&quot; |grep -i -E \&quot;(:|;)#{str}(;|$)\&quot;&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-node">&quot; |grep -i -E \&quot;#{str}\&quot;&quot;</span> 
+ 
+  <span class="ruby-identifier">response</span> = <span class="ruby-identifier">script_mode</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">query</span>(<span class="ruby-string">&quot;configshow&quot;</span><span class="ruby-operator">+</span><span class="ruby-identifier">grep_exp</span>)
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">response</span>.<span class="ruby-identifier">parse</span>
+  
+  <span class="ruby-comment">#output of configshow is stored to find_results</span>
+  
+  <span class="ruby-identifier">objs</span>=<span class="ruby-identifier">response</span>.<span class="ruby-identifier">parsed</span>[<span class="ruby-value">:find_results</span>]
+  <span class="ruby-identifier">objs</span><span class="ruby-operator">||=</span>[]
+  
+  <span class="ruby-identifier">result</span>=[]
+  
+  <span class="ruby-identifier">objs</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">item</span><span class="ruby-operator">|</span>
+     <span class="ruby-identifier">i</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">item</span>[<span class="ruby-value">:type</span>]
+     <span class="ruby-keyword">when</span> <span class="ruby-value">:zone</span>
+        <span class="ruby-constant">Zone</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">item</span>[<span class="ruby-value">:obj</span>])
+     <span class="ruby-keyword">when</span> <span class="ruby-value">:alias</span>
+        <span class="ruby-constant">Alias</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">item</span>[<span class="ruby-value">:obj</span>])
+     <span class="ruby-keyword">when</span> <span class="ruby-value">:cfg</span>
+       <span class="ruby-constant">ZoneConfiguration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">item</span>[<span class="ruby-value">:obj</span>])
+     <span class="ruby-keyword">end</span> 
+     <span class="ruby-identifier">item</span>[<span class="ruby-value">:members</span>].<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;;&quot;</span>).<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">member</span><span class="ruby-operator">|</span>
+       <span class="ruby-identifier">i</span>.<span class="ruby-identifier">add_member</span>(<span class="ruby-identifier">member</span>)
+     <span class="ruby-keyword">end</span>
+     <span class="ruby-identifier">result</span><span class="ruby-operator">&lt;&lt;</span><span class="ruby-identifier">i</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-comment"># result is array of Zone, Alias, and ZoneConfiguration instances</span>
+  <span class="ruby-identifier">result</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- find_by_member-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- find_by_member-method -->
 
     
       <div id="method-i-find_wwn" class="method-detail ">
@@ -1574,7 +1714,7 @@ iject vf context related command into the commands</p>
 
           
           <div class="method-source-code" id="query-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/switch.rb, line 298</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/switch.rb, line 362</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query</span>(*<span class="ruby-identifier">cmds</span>) <span class="ruby-comment">#:nodoc</span>
   <span class="ruby-identifier">cmds</span>.<span class="ruby-identifier">map!</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">cmd</span><span class="ruby-operator">|</span> <span class="ruby-identifier">fullcmd</span>(<span class="ruby-identifier">cmd</span>)}
   <span class="ruby-keyword">super</span>(*<span class="ruby-identifier">cmds</span>)

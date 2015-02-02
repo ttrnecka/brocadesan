@@ -251,4 +251,13 @@ class Brocade::SAN::Switch
 #
 # Returns value in (array) format
 
+##
+# :method: cfg_transaction
+# :call-seq:
+#   cfg_transaction(forced=true)
+#
+# If called with +true+ argument it will get the cfg_transaction from the switch instead of cache
+#
+# Returns value in (hash) format
+
 end

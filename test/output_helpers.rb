@@ -234,9 +234,75 @@ module SSH
     ::Net::SSH.instance_eval do
       if self.singleton_class.respond_to? :old_start
         self.singleton_class.send(:alias_method, :start, :old_start)
+        self.singleton_class.send(:undef_method, :old_start)
       end
     end    
   end
 end
 end
+end
+
+module Kernel
+  # stubs query method by another method that assiges the parameters to @test_string and runing original query
+  def query_stub(&block)
+   self.instance_eval do
+      self.singleton_class.send(:alias_method, :old_query, :query)
+      @query_string=""
+      def query(*cmds)
+        @query_string||=""
+        @query_string<<cmds.join(",")
+        old_query(*cmds)
+      end
+    end
+    yield
+    self.instance_eval do 
+      self.singleton_class.send(:alias_method, :query, :old_query)
+      self.singleton_class.send(:undef_method, :old_query)
+    end  
+  end
+  
+  # stubs query method by another method that assiges the parameters to @test_string and runing original query
+  def abort_transaction_stub(&block)
+   self.instance_eval do
+      self.singleton_class.send(:alias_method, :old_abort_transaction, :abort_transaction)
+      def abort_transaction
+        @trans_aborted=true
+        old_abort_transaction
+      end
+    end
+    yield
+    self.instance_eval do 
+      self.singleton_class.send(:alias_method, :abort_transaction, :old_abort_transaction)
+      self.singleton_class.send(:undef_method, :old_abort_transaction)
+    end  
+  end
+  
+  # stubs query method by another method that assiges the parameters to @test_string and runing original query
+  def raise_if_obj_do_not_exist_stub(&block)
+   self.instance_eval do
+      self.singleton_class.send(:alias_method, :old_raise_if_obj_do_not_exist, :raise_if_obj_do_not_exist)
+      def raise_if_obj_do_not_exist(obj)
+        if !@run.nil?
+          old_raise_if_obj_do_not_exist(obj)
+        end
+        @run=true
+      end
+    end
+    yield
+    self.instance_eval do 
+      self.singleton_class.send(:alias_method, :raise_if_obj_do_not_exist, :old_raise_if_obj_do_not_exist)
+      self.singleton_class.send(:undef_method, :old_raise_if_obj_do_not_exist)
+    end  
+  end
+  
+  def multistub(cmds,&block)
+    if !cmds.empty?
+      cmd = cmds.shift
+      stub cmd[0], cmd[1] do
+          multistub cmds, &block        
+      end
+    else
+      yield
+    end
+  end
 end

@@ -30,6 +30,9 @@ class ZoneConfiguration
     @members<<member
   end
   
+  def to_s
+    @name
+  end
 end
 
 end; end

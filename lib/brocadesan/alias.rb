@@ -55,6 +55,10 @@ class Alias
   def self.verify_member_name(str)
     raise Switch::Error.incorrect(str) if !str.match(/#{MEMBER_RULE}/i)
   end
+  
+  def to_s
+    @name
+  end
 end
 
 end; end

@@ -16,3 +16,6 @@
 :configshow: simple
 :islshow: simple
 :trunkshow: trunk
+:cfgtransshow: multiline
+:zoneshow: cfgshow
+:alishow: cfgshow

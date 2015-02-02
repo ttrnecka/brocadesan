@@ -94,12 +94,9 @@ class SwitchTest < MiniTest::Test
   def test_refresh
     #returns true and runs query if not loaded or forced, runs query
     @device.instance_variable_set(:@configuration,{:name=>"test", :parsing_position=>"test"})
-    @device.set_mode :interactive
     @device.send(:refresh, "switchshow")
     assert_equal a = {:name=>"test", :parsing_position=>"end"}, @device.configuration
     assert_equal true, @device.instance_variable_get(:@loaded)[:switchshow]
-    # refresh should use script mode 
-    assert_equal "script", @device.get_mode
   end
   
   def test_dynamic_methods
@@ -262,6 +259,115 @@ class SwitchTest < MiniTest::Test
       a=@device.find_aliases("unknown")
       assert_equal [], a
     end      
+  end
+  
+  def test_find_by_member
+    response=new_mock_response
+    
+    # find owners of zone
+    response.data="> configshow |grep -i -E \"^zone|alias|cfg\.\"  | grep -i -E \"(:|;)zone_a(;|$)\""
+    response.data<<"\n"
+    response.data<<"cfg.ecs_a:zone_a;zone_b;zone_c\n"
+    
+
+    @device.stub :query, response do 
+      owners=@device.find_by_member("zone_a")
+      assert_equal "ecs_a", owners[0].name
+      owners=@device.find_by_member("zone_b")
+      assert_equal "ecs_a", owners[0].name
+      owners=@device.find_by_member("zone_c")
+      assert_equal "ecs_a", owners[0].name
+      owners=@device.find_by_member("zone_d")
+    end
+    
+    # cannot find anything
+    response.data="> configshow |grep -i -E \"^zone|alias|cfg\.\"  | grep -i -E \"(:|;)zone_a(;|$)\""
+    response.data<<"\n"
+    response.data<<"\n"
+    
+    @device.stub :query, response do 
+      owners=@device.find_by_member("zone_a")
+      assert_empty owners
+    end
+    
+    # find owners of wwn
+    response.data="> configshow |grep -i -E \"^zone|alias|cfg\.\"  | grep -i -E \"(:|;)50:00:01:02:03:04:05:06(;|$)\""
+    response.data<<"\n"
+    response.data<<"zone.zone_a:50:00:01:02:03:04:05:06;50:00:01:02:03:04:06:06;50:00:01:02:03:04:06:07\n"
+    response.data<<"alias.alias_a:50:00:01:02:03:04:06:05;50:00:01:02:03:04:06:06;50:00:01:02:03:04:06:07\n"
+    
+    @device.stub :query, response do 
+      owners=@device.find_by_member("50:00:01:02:03:04:05:06")
+      assert_equal 2, owners.size
+      assert_instance_of Zone, owners[0]
+      assert_instance_of Alias, owners[1]
+    end
+    
+    # test transaction => true
+    @output_dir=File.join(Dir.pwd,"test","outputs")
+    read_all_starting_with "cfgshow_2" do |file,output|
+      z1 = Zone.new("zone1")
+      z1.add_member "alias1"
+      z1.add_member "alias2"
+        
+      z2 = Zone.new("zone2")
+      z2.add_member "alias1"
+      z2.add_member "alias3"
+      
+      z3 = Zone.new("zone3")
+      z3.add_member "alias3"
+      z3.add_member "alias4"
+      
+      z5 = Zone.new("zone5")
+      z5.add_member "alias1"
+      z5.add_member "alias4"
+      
+      response.data=output.dup
+      @device.stub :query, response do  
+        zones = @device.find_by_member("alias2",:object=>:all, :transaction => true)
+        assert_equal z1.name, zones[0].name
+        assert_equal z1.members, zones[0].members
+      end
+      response.data=output.dup
+      @device.stub :query, response do  
+        zones = @device.find_by_member("alias1",:object=>:all, :transaction => true)
+        assert_equal 3, zones.size
+        assert_equal z1.name, zones[0].name
+        assert_equal z1.members, zones[0].members
+        assert_equal z2.name, zones[1].name
+        assert_equal z2.members, zones[1].members
+        assert_equal z5.name, zones[2].name
+        assert_equal z5.members, zones[2].members
+      end
+    end
+    
+    @device.query_stub do
+      @device.stub :old_query, response do 
+        # no parameters -> :exact and :all
+        @device.find_by_member("test")
+        assert_equal "configshow | grep -i -E \"^zone|alias|cfg.\" | grep -i -E \"(:|;)test(;|$)\"",@device.instance_variable_get(:@query_string)
+        @device.instance_variable_set(:@query_string,"")   
+        # find zone
+        @device.find_by_member("test", :object => :zone)
+        assert_equal "configshow | grep -i -E \"^zone.\" | grep -i -E \"(:|;)test(;|$)\"",@device.instance_variable_get(:@query_string)
+        @device.instance_variable_set(:@query_string,"")
+        # find alias
+        @device.find_by_member("test", :object => :alias)
+        assert_equal "configshow | grep -i -E \"^alias.\" | grep -i -E \"(:|;)test(;|$)\"",@device.instance_variable_get(:@query_string)
+        @device.instance_variable_set(:@query_string,"")
+        #find partial
+        @device.find_by_member("test", :find_mode => :partial)
+        assert_equal "configshow | grep -i -E \"^zone|alias|cfg.\" | grep -i -E \":.*test\"",@device.instance_variable_get(:@query_string)
+        @device.instance_variable_set(:@query_string,"")
+        #find by partial and zone
+        @device.find_by_member("test", :find_mode => :partial, :object=>:zone)
+        assert_equal "configshow | grep -i -E \"^zone.\" | grep -i -E \":.*test\"",@device.instance_variable_get(:@query_string)
+        @device.instance_variable_set(:@query_string,"")
+        @device.find_by_member("test", :transaction => true)
+        assert_equal "cfgshow",@device.instance_variable_get(:@query_string)
+        @device.instance_variable_set(:@query_string,"")
+      end
+    end 
   end
   
   def test_wwns

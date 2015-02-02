@@ -4,7 +4,7 @@
 <head>
 <meta content="text/html; charset=IBM437" http-equiv="Content-Type">
 
-<title>class Brocade::SAN::Provisioning::Agent::Error - BrocadeSAN</title>
+<title>class Brocade::SAN::Provisioning::Agent::Transaction - BrocadeSAN</title>
 
 <link type="text/css" media="screen" href="../../../../rdoc.css" rel="stylesheet">
 
@@ -59,12 +59,22 @@
     <nav id="parent-class-section" class="section">
   <h3 class="section-header">Parent</h3>
   
-  <p class="link">self
+  <p class="link">Object
   
 </nav>
 
     
+    <!-- Method Quickref -->
+<nav id="method-list-section" class="section">
+  <h3 class="section-header">Methods</h3>
+
+  <ul class="link-list">
     
+    <li><a href="#method-i-abortable-3F">#abortable?</a>
+    
+  </ul>
+</nav>
+
   </div>
 
   <div id="project-metadata">
@@ -124,11 +134,23 @@
 </nav>
 
 <div id="documentation">
-  <h1 class="class">class Brocade::SAN::Provisioning::Agent::Error</h1>
+  <h1 class="class">class Brocade::SAN::Provisioning::Agent::Transaction</h1>
 
   <div id="description" class="description">
     
-<p>Class that holds <a href="Error.html">Agent::Error</a> messages</p>
+<p>simple <a href="Transaction.html">Transaction</a> class that processes <a
+href="../../Switch.html#method-i-cfg_transaction">Brocade::SAN::Switch#cfg_transaction</a>
+output</p>
+
+<p>Value of <code>id</code> means:</p>
+<dl class="rdoc-list label-list"><dt>:id
+<dd>
+<p>-1 - no transaction exist</p>
+
+<p>nil - unexpected result</p>
+
+<p>string - string representation of current transaction id</p>
+</dd></dl>
 
   </div><!-- description -->
 
@@ -141,79 +163,80 @@
     
 
     
-    <!-- Constants -->
-    <section id="constants-list" class="section">
-      <h3 class="section-header">Constants</h3>
-      <dl>
-      
-        <dt id="ALIAS_BAD">ALIAS_BAD
-        
-        <dd class="description">
-        
-      
-        <dt id="ALIAS_MEMBER_BAD">ALIAS_MEMBER_BAD
-        
-        <dd class="description">
-        
-      
-        <dt id="BAD_USER">BAD_USER
-        
-        <dd class="description">
-        
-      
-        <dt id="CFGSAVE_CANC">CFGSAVE_CANC
-        
-        <dd class="description">
-        
-      
-        <dt id="CFGSAVE_NOCHANGE">CFGSAVE_NOCHANGE
-        
-        <dd class="description">
-        
-      
-        <dt id="CFG_BAD">CFG_BAD
-        
-        <dd class="description">
-        
-      
-        <dt id="MEMBERS_EMPTY">MEMBERS_EMPTY
-        
-        <dd class="description">
-        
-      
-        <dt id="MEMBER_BAD">MEMBER_BAD
-        
-        <dd class="description">
-        
-      
-        <dt id="OBJ_NOTEXIST">OBJ_NOTEXIST
-        
-        <dd class="description">
-        
-      
-        <dt id="TRANS_NOTOWNER">TRANS_NOTOWNER
-        
-        <dd class="description">
-        
-      
-        <dt id="TRNS_IPRG">TRNS_IPRG
-        
-        <dd class="description">
-        
-      
-        <dt id="ZONE_BAD">ZONE_BAD
-        
-        <dd class="description">
-        
-      
-      </dl>
-    </section>
-    
 
+    
+    <!-- Attributes -->
+    <section id="attribute-method-details" class="method-section section">
+      <h3 class="section-header">Attributes</h3>
+
+      
+      <div id="attribute-i-abortable" class="method-detail">
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">abortable</span><span
+            class="attribute-access-type">[W]</span>
+        </div>
+
+        <div class="method-description">
+        
+        
+        
+        </div>
+      </div>
+      
+      <div id="attribute-i-id" class="method-detail">
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">id</span><span
+            class="attribute-access-type">[RW]</span>
+        </div>
+
+        <div class="method-description">
+        
+        <p>Specifies the id of <a href="Transaction.html">Transaction</a></p>
+        
+        </div>
+      </div>
+      
+    </section><!-- attribute-method-details -->
     
 
     <!-- Methods -->
     
+     <section id="public-instance-5Buntitled-5D-method-details" class="method-section section">
+      <h3 class="section-header">Public Instance Methods</h3>
+
+    
+      <div id="method-i-abortable-3F" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">abortable?</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Returns abortable flag</p>
+          
+
+          
+          <div class="method-source-code" id="abortable-3F-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/provisioning.rb, line 709</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">abortable?</span>
+  <span class="ruby-ivar">@abortable</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- abortable-3F-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- abortable-3F-method -->
+
+    
+    </section><!-- public-instance-method-details -->
+  
   </section><!-- 5Buntitled-5D -->
 
 </div><!-- documentation -->

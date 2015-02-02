@@ -20,6 +20,7 @@ class WwnTest < MiniTest::Test
   def test_new_alias 
     wwn=Wwn.new("50:10:20:30:40:50:60:7f","device","1",2,:symbol=>"text")
     assert_equal "50:10:20:30:40:50:60:7f", wwn.value
+    assert_equal "50:10:20:30:40:50:60:7f", wwn.name
     assert_equal "device", wwn.dev_type
     assert_equal 1, wwn.domain_id
     assert_equal 2, wwn.port_index

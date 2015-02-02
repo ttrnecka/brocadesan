@@ -61,10 +61,43 @@ class DeviceTest < MiniTest::Test
     assert @device.instance_variable_get(:@session).closed?
     
     # session can we called only with block, raises error otherwise
-    exp = assert_raises(SshDevice::Error) do
+    exp = assert_raises(TestDevice::Error) do
       @device.session
     end
-    assert_equal SshDevice::Error::SESSION_WTIHOUT_BLOCK, exp.message
+  end
+  
+  def test_script_mode
+    #stub start with test connection coming from net/ssh/test
+    @device.set_mode :interactive
+    assert_equal "interactive", @device.get_mode
+    Net::SSH.stub :start, connection do
+      @device.script_mode do 
+        assert_equal "script", @device.get_mode
+      end
+    end
+    assert_equal "interactive", @device.get_mode
+    
+    # this can we called only with block, raises error otherwise
+    exp = assert_raises(LocalJumpError) do
+      @device.script_mode
+    end
+  end
+  
+   def test_interactive_mode
+    #stub start with test connection coming from net/ssh/test
+    @device.set_mode :script
+    assert_equal "script", @device.get_mode
+    Net::SSH.stub :start, connection do
+      @device.interactive_mode do 
+        assert_equal "interactive", @device.get_mode
+      end
+    end
+    assert_equal "script", @device.get_mode
+    
+    # this can we called only with block, raises error otherwise
+    exp = assert_raises(LocalJumpError) do
+      @device.interactive_mode
+    end
   end
   
   def test_query_in_session

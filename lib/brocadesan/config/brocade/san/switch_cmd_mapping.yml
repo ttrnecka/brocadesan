@@ -110,3 +110,7 @@
     :cmd: "agshow"
     :attr: ag
     :format: array
+:cfg_transaction:
+    :cmd: "cfgtransshow"
+    :attr: cfg_transaction
+    :format: hash

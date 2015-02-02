@@ -1,0 +1,5 @@
+:cfg_transaction:
+ :id: -1
+ :abortable:
+ :msg: "no transaction"
+:parsing_position: end

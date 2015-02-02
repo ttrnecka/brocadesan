@@ -1,0 +1,2 @@
+> cfgtransshow
+There is no outstanding zoning transaction

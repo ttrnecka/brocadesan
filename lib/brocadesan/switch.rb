@@ -5,7 +5,7 @@ require 'yaml'
 module  Brocade 
 # SAN namespace  
 module SAN
-  
+  # TODO: zoneshow, cfgshow and alishow tests
   # configuration class
   class Configuration #:nodoc:
     def self.cmd_mapping_path(_class)
@@ -171,7 +171,9 @@ module SAN
     
     # Returns ZoneConfigurations array
     #
-    # If +full+ is set to true it loads full configurations with zones and aliases, otherwise it gets just the names
+    # If +full+ is set to true it loads full configurations with zones and aliases, otherwise it gets just the names.
+    #
+    # It laods even zone configurations that were create as part of ongoing transaction.
     def zone_configurations(full=false,forced=false)
       get_configshow(full,forced)[:zone_configurations]
     end
@@ -183,13 +185,13 @@ module SAN
       zone_configurations(full,forced).select {|z| z.effective == true}.first
     end
     
-    # returns all zones defined on the switch as array of Zone
+    # returns all zones defined on the switch including zones created in ongoing transaction as array of Zone
     
     def zones(forced=false)
       get_configshow(true,forced)[:zones]
     end
     
-    # returns all zones defined on the switch as array of Alias
+    # returns all aliases defined on the switch including aliases created in ongoing transaction as array of Alias
     
     def aliases(forced=false)
       get_configshow(true,forced)[:aliases]
@@ -269,11 +271,14 @@ module SAN
     #
     # switch.find("zone1",:object=>:zone)
     def find(str,opts={})
+      # do not change the following 3 lines without writing test for it     
       obj = !opts[:object].nil? && [:zone,:alias].include?(opts[:object]) ? opts[:object] : :zone
       mode = !opts[:find_mode].nil? && [:partial,:exact].include?(opts[:find_mode]) ? opts[:find_mode] : :exact
-      grep_exp = mode==:exact ? " | grep -i -E ^#{obj}\..*#{str}:" : " | grep -i -E ^#{obj}\..*#{str}"  
+      grep_exp = mode==:exact ? " | grep -i -E ^#{obj}\.#{str}:" : " | grep -i -E ^#{obj}\..*#{str}.*:"  
       
-      response=query("configshow"+grep_exp)
+      response = script_mode do
+        query("configshow"+grep_exp)
+      end
       response.parse
       
       #output of configshow is stored to find_results
@@ -294,10 +299,84 @@ module SAN
       result
     end
     
-    # query calls SshDevice#query but first iject vf context related command into the commands
-    def query(*cmds) #:nodoc
-      cmds.map! {|cmd| fullcmd(cmd)}
-      super(*cmds)
+    # finds configuration objects that have member specified by +str+. Case insensitive.
+    # If the +object+ option is not specified it searches :zone objects.
+    # See find_by_member_from_cfgshow.
+    #
+    # +opts+
+    #
+    # [:object]     :all (default) - finds all objects (zones, configs, aliases)
+    #
+    #               :aliases - finds aliases
+    #
+    #               :zones - finds zones
+    #
+    # [:find_mode]  :partial - find partial matches
+    #
+    #               :exact(default) - finds exact matches
+    #
+    # [:transaction]  false (defualt) - ignores object in ongoing transaction
+    #
+    #                 true - includes objects in ongoing transaction
+    #
+    # Example:
+    #
+    # switch.find_by_member("zone1",:object=>:cfg)
+    #
+    # Note:
+    #
+    # Zone can be only members of zone configuration and alias can be only members of zones so finding object that have them as members works with default :all :object.
+    # However WWNs can be part both of zones and aliases so that is why there is option to speficy the object
+
+    def find_by_member(str,opts={})
+      obj = !opts[:object].nil? && [:zone,:alias,:all].include?(opts[:object]) ? opts[:object] : :all
+      obj = "zone|alias|cfg" if obj==:all
+      mode = !opts[:find_mode].nil? && [:partial,:exact].include?(opts[:find_mode]) ? opts[:find_mode] : :exact
+      
+      trans_inc = !opts[:transaction].nil? && [true,false].include?(opts[:transaction]) ? opts[:transaction] : false
+      
+      base_grep1 = "^#{obj}\."
+      base_grep2 = mode==:exact ? "(:|;)#{str}(;|$)" : ":.*#{str}"
+    
+      if trans_inc
+        grep_exp1 = /#{base_grep1}/i
+        grep_exp2 = /#{base_grep2}/i
+        response = script_mode do
+          query("cfgshow")
+        end
+        response.send :cfgshow_to_configshow, grep_exp1, grep_exp2
+      else
+        grep_exp = " | grep -i -E \"#{base_grep1}\""
+        grep_exp += " | grep -i -E \"#{base_grep2}\""
+        response = script_mode do
+          query("configshow"+grep_exp)
+        end
+      end
+      
+      response.parse
+      #output of configshow is stored to find_results
+      
+      objs=response.parsed[:find_results]
+      objs||=[]
+      
+      result=[]
+      
+      objs.each do |item|
+         i = case item[:type]
+         when :zone
+            Zone.new(item[:obj])
+         when :alias
+            Alias.new(item[:obj])
+         when :cfg
+           ZoneConfiguration.new(item[:obj])
+         end 
+         item[:members].split(";").each do |member|
+           i.add_member(member)
+         end
+         result<<i
+      end
+      # result is array of Zone, Alias, and ZoneConfiguration instances
+      result
     end
     
     private
@@ -387,10 +466,11 @@ module SAN
     end
     
     def refresh(cmd,filter="",forced=true)
-      set_mode :script
       return @loaded[key(cmd)] if !should_refresh?(cmd+filter,forced)
-      grep_exp=filter.empty? ? "" : " | grep #{filter}" 
-      response=query(cmd+grep_exp)
+      grep_exp=filter.empty? ? "" : " | grep #{filter}"
+      response=script_mode do
+        query(cmd+grep_exp)
+      end
       response.parse
       
       #puts response.data
@@ -439,17 +519,43 @@ module SAN
       
       private 
       
+      # transfers cfgshow to configshow format
+      def cfgshow_to_configshow(*greps)
+        # check if we have configshow output
+        return false if !@data.match(/> cfgshow/m)
+        # replace command
+        @data.gsub!("cfgshow","configshow")
+        # remove all lines below Effective configuration: included and Defined configuration line
+        @data.gsub!(/(Defined configuration:\s*|Effective configuration:.*)/im,"")
+        # remove spaces followig ; (includes newlines)
+        @data.gsub!(/;\s+/m,";")
+        # remove newlines before first member
+        @data.gsub!(/\t\n\t+/m,":")
+        # removes tab before first member
+        @data.gsub!(/([a-z_0-9])\t+([a-z_0-9])/im,'\1:\2')
+        # substitute alias,zone and cfg name
+        @data.gsub!(/^\s*(zone|alias|cfg):\s+/,'\1.')
+        #removes any empty character except newline
+        @data.gsub!(/[ \t]+\n/,"\n")
+        greps.each do |grep_t|
+          @data=@data.split("\n").grep(grep_t).join("\n")
+        end
+        @data="> configshow\n#{@data}"
+        true
+      end
+      
       def before_parse
         reset
         @parsed[:find_results]=[]
+        @parsed[:base]={}
       end
       
       def after_parse
         @parsed[:ports].uniq! if @parsed[:ports]
         to_purge = [:pointer,:last_key,:key,:domain,:was_popped]
         to_purge<<:find_results if @parsed[:find_results].empty?
+        to_purge<<:base if @parsed[:base].empty?
         to_purge.each {|k| @parsed.delete(k)}
-        
       end
       
       def parse_line(line)
@@ -469,6 +575,9 @@ module SAN
             @parsed[:trunk_links]||=[]
           when "agshow"
             @parsed[:ag]||=[]
+          when "cfgtransshow"
+            # if empty hash is returned the response was unexpected
+            @parsed[:cfg_transaction]={}
           end
         end
         #do not process if we are on command line
@@ -502,9 +611,16 @@ module SAN
       # parser used to parse commands with multi lines output
       def parse_multiline(line)
         # switchstatusshow
-        if line.match(/^\s*[a-z]+.*:/i)
+        case
+        when line.match(/^\s*[a-z]+.*:/i)
           arr = line.split(":")
           @parsed[arr[0].strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym]=arr[1..-1].join(":").strip
+        when line.match(/^There is no outstanding/) && @parsed[:parsing_position]=="cfgtransshow"
+          @parsed[:cfg_transaction] = {:id=>-1, :abortable=>nil, :msg => "no transaction"}
+        when line.match(/^Current transaction token is (.+)$/) && @parsed[:parsing_position]=="cfgtransshow"
+          @parsed[:cfg_transaction][:id] = $1
+        when line.match(/It is(.+)abortable$/) && @parsed[:parsing_position]=="cfgtransshow"
+          @parsed[:cfg_transaction][:abortable] = $1.match(/not/) ? false : true
         else
           #supportshow
           @parsed[@parsed[:parsing_position].to_sym]||=""
@@ -552,9 +668,9 @@ module SAN
             l=line.split(" ")
             @parsed[:fabric]||=[]
             @parsed[:fabric] << {:domain_id => l[0].gsub(/:/,"").strip, :sid => l[1].strip, :wwn=>l[2].strip, :eth_ip=>l[3].strip, :fc_ip=>l[4].strip, :name=>l[5].strip.gsub(/\"|>/,""), :local => l[5].strip.match(/^>/) ? true : false }
-          when line.match(/^(zone|alias)\./)
-            l=line.gsub!(/^(zone|alias)\./,"").split(":")
-            @parsed[:find_results] << {:obj=>l.shift,:members=>l.join(":")}
+          when line.match(/^(zone|alias|cfg)\./)
+            l=line.gsub!(/^(zone|alias|cfg)\./,"").split(":")
+            @parsed[:find_results] << {:obj=>l.shift,:members=>l.join(":"), :type => $1.to_sym}
           #agshow
           when line.match(/^([a-f0-9]{2}:){7}[a-f0-9]{2}\s+\d+/i) && @parsed[:parsing_position]=="agshow"
             l=line.split(" ")
@@ -598,6 +714,7 @@ module SAN
         
         # we use array stack to point to the object being parsed
         @parsed[:pointer]||=[]
+        @parsed[:pointer].push @parsed[:base] if @parsed[:pointer].empty?
         @parsed[:key]||=[]
         @parsed[:last_key]||=nil
         @parsed[:was_popped]||=false
@@ -606,7 +723,7 @@ module SAN
           key=str_to_key(matches[1]) 
           after_colon=matches[2].strip
           
-          # superkey
+          # superkey -> defined_configuration, efective_configuration, cfg, zone, alias
           if after_colon.empty?
             @parsed[key]||={}
             # we have new superkey so we pop the old from pointer stack

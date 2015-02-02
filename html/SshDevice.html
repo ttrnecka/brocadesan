@@ -68,7 +68,11 @@
     
     <li><a href="#method-i-get_mode">#get_mode</a>
     
+    <li><a href="#method-i-interactive_mode">#interactive_mode</a>
+    
     <li><a href="#method-i-query">#query</a>
+    
+    <li><a href="#method-i-script_mode">#script_mode</a>
     
     <li><a href="#method-i-session">#session</a>
     
@@ -106,6 +110,10 @@
     <li><a href="./Brocade/SAN/Provisioning/Agent.html">Brocade::SAN::Provisioning::Agent</a>
   
     <li><a href="./Brocade/SAN/Provisioning/Agent/Error.html">Brocade::SAN::Provisioning::Agent::Error</a>
+  
+    <li><a href="./Brocade/SAN/Provisioning/Agent/Transaction.html">Brocade::SAN::Provisioning::Agent::Transaction</a>
+  
+    <li><a href="./Brocade/SAN/Provisioning/Replies.html">Brocade::SAN::Provisioning::Replies</a>
   
     <li><a href="./Brocade/SAN/Switch.html">Brocade::SAN::Switch</a>
   
@@ -294,6 +302,38 @@ href="SshDevice.html#DEFAULT_QUERY_PROMPT">DEFAULT_QUERY_PROMPT</a></p>
       </div><!-- get_mode-method -->
 
     
+      <div id="method-i-interactive_mode" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">interactive_mode</span><span
+            class="method-args">(&block)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Defines a block of code to run in interactive mode</p>
+
+<p>the mode will be reverted back to initial mode after leaving the block</p>
+          
+
+          
+          <div class="method-source-code" id="interactive_mode-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 146</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">interactive_mode</span>(&amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">run_in_mode</span> <span class="ruby-value">:interactive</span>, &amp;<span class="ruby-identifier">block</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- interactive_mode-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- interactive_mode-method -->
+
+    
       <div id="method-i-query" class="method-detail ">
         
         <div class="method-heading">
@@ -338,7 +378,7 @@ error will be available in the exception message</p>
 
           
           <div class="method-source-code" id="query-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 89</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query</span>(*<span class="ruby-identifier">cmds</span>)
   <span class="ruby-identifier">output</span>=<span class="ruby-keyword">nil</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">session_exist?</span>
@@ -361,6 +401,38 @@ error will be available in the exception message</p>
 
         
       </div><!-- query-method -->
+
+    
+      <div id="method-i-script_mode" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">script_mode</span><span
+            class="method-args">(&block)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Defines a block of code to run in script mode</p>
+
+<p>the mode will be reverted back to initial mode after leaving the block</p>
+          
+
+          
+          <div class="method-source-code" id="script_mode-source">
+            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 139</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">script_mode</span>(&amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">run_in_mode</span> <span class="ruby-value">:script</span>, &amp;<span class="ruby-identifier">block</span>
+<span class="ruby-keyword">end</span></pre>
+          </div><!-- script_mode-source -->
+          
+        </div>
+
+        
+
+        
+      </div><!-- script_mode-method -->
 
     
       <div id="method-i-session" class="method-detail ">
@@ -391,24 +463,27 @@ closed only at the last block</p>
   device.version
 end</pre>
 
-<p>Raises <a href="SshDevice/Error.html">SshDevice::Error</a> if run without
-block</p>
+<p>Must receive block, raises <a
+href="SshDevice/Error.html">SshDevice::Error</a> otherwise</p>
           
 
           
           <div class="method-source-code" id="session-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 119</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">session</span>
-  <span class="ruby-identifier">raise</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span><span class="ruby-operator">::</span><span class="ruby-constant">SESSION_WTIHOUT_BLOCK</span>) <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">block_given?</span>
-  <span class="ruby-ivar">@session_level</span><span class="ruby-operator">+=</span><span class="ruby-value">1</span>
-  <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">session_exist?</span>
-    <span class="ruby-ivar">@session</span>=<span class="ruby-constant">Net</span><span class="ruby-operator">::</span><span class="ruby-constant">SSH</span>.<span class="ruby-identifier">start</span> <span class="ruby-ivar">@address</span>, <span class="ruby-ivar">@user</span>, <span class="ruby-value">:password=</span><span class="ruby-operator">&gt;</span><span class="ruby-ivar">@password</span>
-  <span class="ruby-keyword">end</span> 
-  <span class="ruby-keyword">yield</span>
-  
-<span class="ruby-keyword">ensure</span>
-  <span class="ruby-ivar">@session_level</span><span class="ruby-operator">-=</span><span class="ruby-value">1</span>
-  <span class="ruby-ivar">@session</span>.<span class="ruby-identifier">close</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@session</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@session_level</span><span class="ruby-operator">==</span><span class="ruby-value">0</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 120</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">session</span>(&amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Error</span>.<span class="ruby-identifier">no_block</span> <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">block_given?</span>
+  <span class="ruby-keyword">begin</span> 
+    <span class="ruby-ivar">@session_level</span><span class="ruby-operator">+=</span><span class="ruby-value">1</span> 
+    <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">session_exist?</span>
+      <span class="ruby-ivar">@session</span>=<span class="ruby-constant">Net</span><span class="ruby-operator">::</span><span class="ruby-constant">SSH</span>.<span class="ruby-identifier">start</span> <span class="ruby-ivar">@address</span>, <span class="ruby-ivar">@user</span>, <span class="ruby-value">:password=</span><span class="ruby-operator">&gt;</span><span class="ruby-ivar">@password</span>
+    <span class="ruby-keyword">end</span>
+    <span class="ruby-keyword">yield</span>
+  <span class="ruby-keyword">rescue</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-identifier">e</span>
+  <span class="ruby-keyword">ensure</span>
+    <span class="ruby-ivar">@session_level</span><span class="ruby-operator">-=</span><span class="ruby-value">1</span>
+    <span class="ruby-ivar">@session</span>.<span class="ruby-identifier">close</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@session</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@session_level</span><span class="ruby-operator">==</span><span class="ruby-value">0</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@session</span>.<span class="ruby-identifier">closed?</span>
+  <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
           </div><!-- session-source -->
           
@@ -442,7 +517,7 @@ href="SshDevice.html#method-i-query">query</a></p>
 
           
           <div class="method-source-code" id="set_mode-source">
-            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 60</span>
+            <pre><span class="ruby-comment"># File lib/brocadesan/device.rb, line 61</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_mode</span>(<span class="ruby-identifier">mode</span>)
   <span class="ruby-ivar">@opts</span>[<span class="ruby-value">:interactive</span>] = <span class="ruby-identifier">mode</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;interactive&quot;</span> <span class="ruby-operator">?</span> <span class="ruby-keyword">true</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">false</span>
   <span class="ruby-identifier">get_mode</span>
