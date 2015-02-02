@@ -2,8 +2,10 @@
 
 == What is BrocadeSAN?
 
-BrocadeSAN provides a simple API to communicate with Brocade SAN switches using CLI SSH connection.
+BrocadeSAN provides a simple wrapper API to communicate with Brocade SAN switches using SSH connection.
 You have option to either run the command manualy or query the switch with pre-defined set of methods.
+
+Additionally you can use Brocade::SAN::Provisioning::Agent for zoning provisioning tasks.
 
 == Basic Usage
 
@@ -47,8 +49,35 @@ If the API is not sufficient for your need you can always utilize the Brocade::S
   response=switch.query("cfgsave","y")
   
 Response is type of Brocade::SAN::Switch::Response. You can get the data by calling +data+ and errors by calling +errors+.
-
 The data will be raw output from the switch with each cmd prefixed by defined/default prompt.
+
+== Provisioning
+
+This is wrapper API for provisioning tasks with added control. This wrapper expects some basic understanding of zoning provisioning tasks and should be used to build
+specialized provisioning clients.
+
+  # creates a agent, user must have provisioning rights
+  agent=Brocade::SAN::Provisoning::Agent.create("address","user","password")
+  
+  # create a zone instance with aliases
+  zone = Brocade::SAN::Zone.new("host_array_zone")
+  zone.add_member "host_alias"
+  zone.add_member "array_alias"
+  
+  # gets effecive configuration (false gets name only without members)
+  cfg=agent.effective_configuration(false)
+  
+  # creates zone and adds it to the configuration in transaction
+  # transaction saves configuration at the end, it does not enable effective configuration
+  # agent methods outside of transaction will save configuration immediately
+  agent.transaction do
+  	agent.zone_create zone
+  	agent.cfg_add cfg, zone
+  end
+  
+  # enable effective configuration
+  agent.cfg_enable cfg
+  
 == Download and Installation
 
 Installation *with* RubyGems:
