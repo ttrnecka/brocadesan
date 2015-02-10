@@ -379,6 +379,11 @@ module SAN
       result
     end
     
+    def query(*cmds) #:nodoc
+      cmds.map! {|cmd| fullcmd(cmd)}
+      super(*cmds)
+    end
+    
     private
     
     def should_refresh?(cmd, forced)

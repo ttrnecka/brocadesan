@@ -21,6 +21,16 @@ class SwitchTest < MiniTest::Test
     response=@device.query("test")
     assert_instance_of Switch::Response, response
     assert_equal @device.prompt+"test\n"+Mock::Net::SSH::get_data+"\n", response.data
+    # check fullcmd is started
+    @i=0
+    inc = lambda {|cmd| @i+=1;cmd}
+    @device.stub :fullcmd, inc do
+      response=@device.query("test")
+      assert_equal 1, @i
+      @i=0
+      response=@device.query("test","test")
+      assert_equal 2, @i
+    end
   end
   
   def test_device_setup
