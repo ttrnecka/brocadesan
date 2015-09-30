@@ -6,6 +6,7 @@ module Brocade module SAN
   
 class SwitchTest < MiniTest::Test
   include OutputReader
+  include SshStoryWriter
   include Mock::Net::SSH
   patch_set
     
@@ -31,6 +32,24 @@ class SwitchTest < MiniTest::Test
       response=@device.query("test","test")
       assert_equal 2, @i
     end
+  end
+  
+  def test_interactive_query
+    cmds = ["fosexec --fid 99 'cfgsave'","y"]
+    replies = ["confirm? [y,n]"]
+    exp_response = write_interactive_story(cmds,replies,TestDevice::DEFAULT_QUERY_PROMPT)
+    
+    @device.set_mode("interactive")
+    @device.set_context 99
+    # connection is net/ssh/test method
+    @device.instance_variable_set(:@session,connection)
+    
+    response=nil
+    assert_scripted do
+      response=@device.query("cfgsave","y")
+      assert_equal exp_response, response.data
+    end    
+    
   end
   
   def test_device_setup

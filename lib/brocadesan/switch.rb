@@ -380,7 +380,11 @@ module SAN
     end
     
     def query(*cmds) #:nodoc
-      cmds.map! {|cmd| fullcmd(cmd)}
+      if get_mode=="interactive"
+        cmds[0]=fullcmd(cmds[0])
+      else
+        cmds.map! {|cmd| fullcmd(cmd)}
+      end
       super(*cmds)
     end
     
