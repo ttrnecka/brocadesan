@@ -342,12 +342,12 @@ class ProvisioningTest < MiniTest::Test
         :cmd => "cfgcreate",
         :member_name => "Zone",
         :error=>Provisioning::Agent::Error::CFG_BAD,:method=>:cfg_create,
-        :msg_invalid => "> cfgcreate \"test-04\",\"koza; byk\"\nInvalid name\n",
+        :msg_invalid => "> cfgcreate \'test-04\',\'koza; byk\'\nInvalid name\n",
         :resp_invalid => "Invalid name",
-        :msg_ok => "> cfgcreate \"test\",\"koza; byk\"\n",
+        :msg_ok => "> cfgcreate \'test\',\'koza; byk\'\n",
         :resp_ok => "",
-        :msg_duplicate => "> cfgcreate cfg1, zone1\n\"cfg1\" duplicate name\n",
-        :resp_duplicate => "\"cfg1\" duplicate name",
+        :msg_duplicate => "> cfgcreate cfg1, zone1\n\'cfg1\' duplicate name\n",
+        :resp_duplicate => "\'cfg1\' duplicate name",
         :members => zones.map {|z| z.to_s}
        },
        {:obj=>Zone.new("zonetest"), 
@@ -355,12 +355,12 @@ class ProvisioningTest < MiniTest::Test
         :cmd => "zonecreate",
         :member_name => "Alias",
         :error => Provisioning::Agent::Error::ZONE_BAD,:method=>:zone_create,
-        :msg_invalid => "> zonecreate \"test-04\",\"koza; byk\"\nInvalid name\n",
+        :msg_invalid => "> zonecreate \'test-04\',\'koza; byk\'\nInvalid name\n",
         :resp_invalid => "Invalid name",
-        :msg_ok => "> zonecreate \"test\",\"koza; byk\"\n",
+        :msg_ok => "> zonecreate \'test\',\'koza; byk\'\n",
         :resp_ok => "",
-        :msg_duplicate => "> zonecreate WYN_vls1_node3_fc0, 5B:49:9B:AF:F0:93:00:13\n\"WYN_vls1_node3_fc0\" duplicate name\n",
-        :resp_duplicate => "\"WYN_vls1_node3_fc0\" duplicate name",
+        :msg_duplicate => "> zonecreate WYN_vls1_node3_fc0, 5B:49:9B:AF:F0:93:00:13\n\'WYN_vls1_node3_fc0\' duplicate name\n",
+        :resp_duplicate => "\'WYN_vls1_node3_fc0\' duplicate name",
         :members => als.map {|a| a.to_s}
         },
        {:obj=>Alias.new("aliastest"), 
@@ -368,12 +368,12 @@ class ProvisioningTest < MiniTest::Test
         :cmd => "alicreate",
         :member_name => "Wwn", 
         :error => Provisioning::Agent::Error::ALIAS_BAD,:method=>:alias_create,
-        :msg_invalid => "> alicreate \"test\",\"50:00; 50:02\"\nInvalid alias\n",
+        :msg_invalid => "> alicreate \'test\',\'50:00; 50:02\'\nInvalid alias\n",
         :resp_invalid => "Invalid alias",
-        :msg_ok => "> alicreate \"test\",\"50:00; 50:02\"\n",
+        :msg_ok => "> alicreate \'test\',\'50:00; 50:02\'\n",
         :resp_ok => "",
-        :msg_duplicate => "> alicreate WYN_vls1_node3_fc0, 5B:49:9B:AF:F0:93:00:13\n\"WYN_vls1_node3_fc0\" duplicate name\n",
-        :resp_duplicate => "\"WYN_vls1_node3_fc0\" duplicate name",
+        :msg_duplicate => "> alicreate WYN_vls1_node3_fc0, 5B:49:9B:AF:F0:93:00:13\n\'WYN_vls1_node3_fc0\' duplicate name\n",
+        :resp_duplicate => "\'WYN_vls1_node3_fc0\' duplicate name",
         :members => wwns.map {|w| w.to_s}
         }
      ]
@@ -432,7 +432,7 @@ class ProvisioningTest < MiniTest::Test
               @agent.query_stub do
                 assert_equal obj[:obj], @agent.send(:obj_create,obj[:obj],obj[:klass])
                 # checks the cmd sent to query
-                assert_equal "#{obj[:cmd]} \"#{obj[:obj].name}\", \"#{obj[:obj].members.join(";")}\"", @agent.instance_variable_get(:@query_string)
+                assert_equal "#{obj[:cmd]} \'#{obj[:obj].name}\', \'#{obj[:obj].members.join(";")}\'", @agent.instance_variable_get(:@query_string)
               end
             end
             
@@ -485,9 +485,9 @@ class ProvisioningTest < MiniTest::Test
         :member_name => "Zone",
         :error=>Provisioning::Agent::Error::CFG_BAD,
         :method=>:cfg_delete,
-        :msg_not_found => "> cfgdelete \"test\"\nnot found\n",
+        :msg_not_found => "> cfgdelete \'test\'\nnot found\n",
         :resp_not_found => "not found",
-        :msg_ok => "> cfgedelete \"test\"\n",
+        :msg_ok => "> cfgedelete \'test\'\n",
         :resp_ok => ""
        },
        {:obj=>Zone.new("zonetest"), 
@@ -496,9 +496,9 @@ class ProvisioningTest < MiniTest::Test
         :member_name => "Alias",
         :error => Provisioning::Agent::Error::ZONE_BAD,
         :method=>:zone_delete,
-        :msg_not_found => "> zonedelete \"test\"\nnot found\n",
+        :msg_not_found => "> zonedelete \'test\'\nnot found\n",
         :resp_not_found => "not found",
-        :msg_ok => "> zonedelete \"test\"\n",
+        :msg_ok => "> zonedelete \'test\'\n",
         :resp_ok => ""
         },
        {:obj=>Alias.new("aliastest"), 
@@ -507,9 +507,9 @@ class ProvisioningTest < MiniTest::Test
         :member_name => "Wwn", 
         :error => Provisioning::Agent::Error::ALIAS_BAD,
         :method=>:alias_delete,
-        :msg_not_found => "> alidelete \"test\"\nnot found\n",
+        :msg_not_found => "> alidelete \'test\'\nnot found\n",
         :resp_not_found => "not found",
-        :msg_ok => "> alidelete \"test\"\n",
+        :msg_ok => "> alidelete \'test\'\n",
         :resp_ok => ""
         }
      ]
@@ -554,7 +554,7 @@ class ProvisioningTest < MiniTest::Test
           @agent.query_stub do 
             assert_equal obj[:obj], @agent.send(:obj_delete,obj[:obj],obj[:klass])
             # checks the cmd sent to query
-            assert_equal "#{obj[:cmd]} \"#{obj[:obj].name}\"", @agent.instance_variable_get(:@query_string)
+            assert_equal "#{obj[:cmd]} \'#{obj[:obj].name}\'", @agent.instance_variable_get(:@query_string)
           end
         end
       end
@@ -576,7 +576,7 @@ class ProvisioningTest < MiniTest::Test
        :method => :alias_change
        }
     ]
-    @response.data="> alidelete \"test\"\n"
+    @response.data="> alidelete \'test\'\n"
     objs.each do |obj|
       @agent.multistub [
         [:check_for_running_transaction, false],
@@ -590,11 +590,11 @@ class ProvisioningTest < MiniTest::Test
         @agent.query_stub do
           assert_equal obj[:obj], @agent.send(:obj_change,obj[:obj],obj[:klass])
           # checks the cmd sent to query
-          assert_equal "#{obj[:queries][0]} \"#{obj[:obj].name}\"#{obj[:queries][1]} \"#{obj[:obj].name}\", \"#{obj[:obj].members.join(";")}\"", @agent.instance_variable_get(:@query_string)
+          assert_equal "#{obj[:queries][0]} \'#{obj[:obj].name}\'#{obj[:queries][1]} \'#{obj[:obj].name}\', \'#{obj[:obj].members.join(";")}\'", @agent.instance_variable_get(:@query_string)
           @agent.instance_variable_set(:@query_string,"")
           # test wrapper method
           @agent.send obj[:method],obj[:obj]
-          assert_equal "#{obj[:queries][0]} \"#{obj[:obj].name}\"#{obj[:queries][1]} \"#{obj[:obj].name}\", \"#{obj[:obj].members.join(";")}\"", @agent.instance_variable_get(:@query_string)
+          assert_equal "#{obj[:queries][0]} \'#{obj[:obj].name}\'#{obj[:queries][1]} \'#{obj[:obj].name}\', \'#{obj[:obj].members.join(";")}\'", @agent.instance_variable_get(:@query_string)
         end
       end
     end
@@ -612,9 +612,9 @@ class ProvisioningTest < MiniTest::Test
         :error=>Provisioning::Agent::Error::CFG_BAD,
         :error_member => Provisioning::Agent::Error::ZONE_BAD,
         :method=>:cfg_remove,
-        :msg_not_found => "> cfgremove \"zctest\",\"zonetest\"\nnot found\n",
+        :msg_not_found => "> cfgremove \'zctest\',\'zonetest\'\nnot found\n",
         :resp_not_found => "not found",
-        :msg_ok => "> cfgremove \"zctest\",\"zonetest\"\n",
+        :msg_ok => "> cfgremove \'zctest\',\'zonetest\'\n",
         :resp_ok => ""
        },
        {:obj=>Zone.new("zonetest"), 
@@ -627,9 +627,9 @@ class ProvisioningTest < MiniTest::Test
         :error => Provisioning::Agent::Error::ZONE_BAD,
         :error_member => Provisioning::Agent::Error::MEMBER_BAD,
         :method=>:zone_remove,
-        :msg_not_found => "> zoneremove \"zonename\",\"aliastest\"\nnot found\n",
+        :msg_not_found => "> zoneremove \'zonename\',\'aliastest\'\nnot found\n",
         :resp_not_found => "not found",
-        :msg_ok => "> zoneremove \"zonename\",\"aliastest\"\n",
+        :msg_ok => "> zoneremove \'zonename\',\'aliastest\'\n",
         :resp_ok => ""
         },
        {:obj=>Alias.new("aliastest"), 
@@ -642,9 +642,9 @@ class ProvisioningTest < MiniTest::Test
         :error => Provisioning::Agent::Error::ALIAS_BAD,
         :error_member => Provisioning::Agent::Error::ALIAS_MEMBER_BAD,
         :method=>:alias_remove,
-        :msg_not_found => "> aliremove \"aliastest\",\"50:00; 50:02\"\nnot found\n",
+        :msg_not_found => "> aliremove \'aliastest\',\'50:00; 50:02\'\nnot found\n",
         :resp_not_found => "not found",
-        :msg_ok => "> aliremove \"aliastest\",\"50:00; 50:02\"\n",
+        :msg_ok => "> aliremove \'aliastest\',\'50:00; 50:02\'\n",
         :resp_ok => ""
         }
      ]
@@ -697,11 +697,11 @@ class ProvisioningTest < MiniTest::Test
           @agent.query_stub do
             obj[:members_ok].each do |mem_ok|
               assert_equal obj[:obj], @agent.send(:obj_remove,obj[:obj],obj[:klass],mem_ok)
-              assert_equal "#{obj[:cmd]} \"#{obj[:obj].name}\", \"#{mem_ok}\"", @agent.instance_variable_get(:@query_string)
+              assert_equal "#{obj[:cmd]} \'#{obj[:obj].name}\', \'#{mem_ok}\'", @agent.instance_variable_get(:@query_string)
               @agent.instance_variable_set(:@query_string,"")
               # test wrapper method
               @agent.send obj[:method],obj[:obj],mem_ok
-              assert_equal "#{obj[:cmd]} \"#{obj[:obj].name}\", \"#{mem_ok}\"", @agent.instance_variable_get(:@query_string)
+              assert_equal "#{obj[:cmd]} \'#{obj[:obj].name}\', \'#{mem_ok}\'", @agent.instance_variable_get(:@query_string)
               @agent.instance_variable_set(:@query_string,"")
             end       
           end
@@ -735,9 +735,9 @@ class ProvisioningTest < MiniTest::Test
         :error=>Provisioning::Agent::Error::CFG_BAD,
         :error_member => Provisioning::Agent::Error::ZONE_BAD,
         :method=>:cfg_add,
-        :msg_not_found => "> cfgadd \"zctest\",\"zonetest\"\nnot found\n",
+        :msg_not_found => "> cfgadd \'zctest\',\'zonetest\'\nnot found\n",
         :resp_not_found => "not found",
-        :msg_ok => "> cfgadd \"zctest\",\"zonetest\"\n",
+        :msg_ok => "> cfgadd \'zctest\',\'zonetest\'\n",
         :resp_ok => ""
        },
        {:obj=>Zone.new("zonetest"), 
@@ -750,9 +750,9 @@ class ProvisioningTest < MiniTest::Test
         :error => Provisioning::Agent::Error::ZONE_BAD,
         :error_member => Provisioning::Agent::Error::MEMBER_BAD,
         :method=>:zone_add,
-        :msg_not_found => "> zoneadd \"zonename\",\"aliastest\"\nnot found\n",
+        :msg_not_found => "> zoneadd \'zonename\',\'aliastest\'\nnot found\n",
         :resp_not_found => "not found",
-        :msg_ok => "> zoneadd \"zonename\",\"aliastest\"\n",
+        :msg_ok => "> zoneadd \'zonename\',\'aliastest\'\n",
         :resp_ok => ""
         },
        {:obj=>Alias.new("aliastest"), 
@@ -765,9 +765,9 @@ class ProvisioningTest < MiniTest::Test
         :error => Provisioning::Agent::Error::ALIAS_BAD,
         :error_member => Provisioning::Agent::Error::ALIAS_MEMBER_BAD,
         :method=>:alias_add,
-        :msg_not_found => "> aliadd \"aliastest\",\"50:00; 50:02\"\nnot found\n",
+        :msg_not_found => "> aliadd \'aliastest\',\'50:00; 50:02\'\nnot found\n",
         :resp_not_found => "not found",
-        :msg_ok => "> aliadd \"aliastest\",\"50:00; 50:02\"\n",
+        :msg_ok => "> aliadd \'aliastest\',\'50:00; 50:02\'\n",
         :resp_ok => ""
         }
      ]
@@ -820,11 +820,11 @@ class ProvisioningTest < MiniTest::Test
           @agent.query_stub do
             obj[:members_ok].each do |mem_ok|
               assert_equal obj[:obj], @agent.send(:obj_add,obj[:obj],obj[:klass],mem_ok)
-              assert_equal "#{obj[:cmd]} \"#{obj[:obj].name}\", \"#{mem_ok}\"", @agent.instance_variable_get(:@query_string)
+              assert_equal "#{obj[:cmd]} \'#{obj[:obj].name}\', \'#{mem_ok}\'", @agent.instance_variable_get(:@query_string)
               @agent.instance_variable_set(:@query_string,"")
               # test wrapper method
               @agent.send obj[:method],obj[:obj],mem_ok
-              assert_equal "#{obj[:cmd]} \"#{obj[:obj].name}\", \"#{mem_ok}\"", @agent.instance_variable_get(:@query_string)
+              assert_equal "#{obj[:cmd]} \'#{obj[:obj].name}\', \'#{mem_ok}\'", @agent.instance_variable_get(:@query_string)
               @agent.instance_variable_set(:@query_string,"")
             end     
           end
@@ -878,7 +878,7 @@ class ProvisioningTest < MiniTest::Test
         }
      ]
      # some ok response
-     @response.data="> alidelete \"test\"\n"
+     @response.data="> alidelete \'test\'\n"
      objs.each do |obj|
        @agent.multistub [
           [:check_for_running_transaction, false],
@@ -893,11 +893,11 @@ class ProvisioningTest < MiniTest::Test
          @agent.query_stub do
            assert_equal obj[:obj], @agent.send(:obj_purge,obj[:obj],obj[:klass])
            # checks the cmd sent to query
-           assert_equal "#{obj[:queries][0]} \"#{obj[:parents][0]}\", \"#{obj[:obj]}\"#{obj[:queries][1]} \"#{obj[:obj]}\"", @agent.instance_variable_get(:@query_string)
+           assert_equal "#{obj[:queries][0]} \'#{obj[:parents][0]}\', \'#{obj[:obj]}\'#{obj[:queries][1]} \'#{obj[:obj]}\'", @agent.instance_variable_get(:@query_string)
            @agent.instance_variable_set(:@query_string,"")
            # test wrapper method
            @agent.send obj[:method],obj[:obj]
-           assert_equal "#{obj[:queries][0]} \"#{obj[:parents][0]}\", \"#{obj[:obj]}\"#{obj[:queries][1]} \"#{obj[:obj]}\"", @agent.instance_variable_get(:@query_string)
+           assert_equal "#{obj[:queries][0]} \'#{obj[:parents][0]}\', \'#{obj[:obj]}\'#{obj[:queries][1]} \'#{obj[:obj]}\'", @agent.instance_variable_get(:@query_string)
          end
        end
      end

@@ -748,9 +748,9 @@ module Provisioning
       when "delete"
         ""
       when "create"
-        ", \"#{obj.members.join(";")}\""
+        ", \'#{obj.members.join(";")}\'"
       when "remove","add"
-        ", \"#{member}\""
+        ", \'#{member}\'"
       else
         ""
       end
@@ -803,7 +803,7 @@ module Provisioning
       cmd_part = get_cmd klass, word
       object_member_part = get_member_part obj, word, member
       response = script_mode do
-        query("#{cmd_part} \"#{obj}\"#{object_member_part}")
+        query("#{cmd_part} \'#{obj}\'#{object_member_part}")
       end
       validate_and_save(response)
     end
