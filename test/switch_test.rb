@@ -18,6 +18,11 @@ class SwitchTest < MiniTest::Test
     @device = Switch.new("test","test","test")
   end
   
+  def test_override_vf
+    @device.override_vf
+    assert @device.instance_variable_get(:@configuration)[:override_vf]
+  end
+  
   def test_query
     response=@device.query("test")
     assert_instance_of Switch::Response, response
@@ -166,6 +171,12 @@ class SwitchTest < MiniTest::Test
     #vf enabled and fid given and piped commnad
     @device.set_context 99
     assert_equal "fosexec --fid 99 \'test\' | grep shit| grep shit2", @device.send(:fullcmd,"test| grep shit| grep shit2")
+    
+    #vf enabled and fid given and override
+    @device.set_context 99
+    @device.override_vf
+    assert_equal "test", @device.send(:fullcmd,"test")
+    
   end
   
   def test_zone_cfgs_and_effective_cfg_and_zones

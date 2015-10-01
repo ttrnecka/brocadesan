@@ -130,6 +130,12 @@ module SAN
       @fid = fid.to_i==0 ? 128 : fid.to_i
     end
     
+    # override VF settings
+    # all commands will run only on base switch
+    # this is to allow to run certain commands on VF enabled switches untill the fosexec is fixed 
+    def override_vf
+      @configuration[:override_vf]=true
+    end
     # gets the +attr+
     #
     # +attr+ has to be speficied in the CMD_MAPPING
@@ -500,7 +506,7 @@ module SAN
     end
     
     def fullcmd(cmd)
-      if @configuration[:vf]=="enabled" && @fid
+      if @configuration[:vf]=="enabled" && @fid && !@configuration[:override_vf]
         cmds = cmd.split("|") 
         if cmds.size>1
           "fosexec --fid #{@fid} \'#{cmds.shift}\' |#{cmds.join("|")}"

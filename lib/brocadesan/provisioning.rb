@@ -34,6 +34,9 @@ module Provisioning
     # Checks as well if the switch is virtual fabric enabled since that defines the way it will be queried further.
     def self.create(*params)
       agent=new(*params)
+      #TODO revisit this once the v7.3 is installed
+      agent.override_vf
+      agent
     end
     
     # Queries the agent for ongoing transaction.

@@ -21,6 +21,7 @@ class ProvisioningTest < MiniTest::Test
   def test_device_setup
     assert_instance_of Provisioning::Agent, @agent
     assert_equal nil, @agent.instance_variable_get(:@transaction)
+    assert @agent.instance_variable_get(:@configuration)[:override_vf]
     
     # this hack ensures I can test verify false inside create
     Provisioning::Agent.class_eval do 
