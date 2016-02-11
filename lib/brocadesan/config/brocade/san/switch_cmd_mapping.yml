@@ -10,6 +10,10 @@
     :cmd: switchshow
     :attr: switch_mode
     :format: string
+:type: 
+    :cmd: switchshow
+    :attr: switch_type
+    :format: string
 :role: 
     :cmd: switchshow
     :attr: switch_role
