@@ -118,3 +118,11 @@
     :cmd: "cfgtransshow"
     :attr: cfg_transaction
     :format: hash
+:principal_mode:
+    :cmd: fabricprincipal
+    :attr: principal_selection_mode
+    :format: string
+:principal_priority:
+    :cmd: fabricprincipal
+    :attr: principal_switch_selection_priority
+    :format: string

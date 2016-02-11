@@ -19,3 +19,4 @@
 :cfgtransshow: multiline
 :zoneshow: cfgshow
 :alishow: cfgshow
+:fabricprincipal: multiline

@@ -27,6 +27,15 @@ class Brocade::SAN::Switch
 # Returns value in (string) format
 
 ##
+# :method: type
+# :call-seq:
+#   type(forced=true)
+#
+# If called with +true+ argument it will get the switch_type from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
 # :method: role
 # :call-seq:
 #   role(forced=true)
@@ -259,5 +268,23 @@ class Brocade::SAN::Switch
 # If called with +true+ argument it will get the cfg_transaction from the switch instead of cache
 #
 # Returns value in (hash) format
+
+##
+# :method: principal_mode
+# :call-seq:
+#   principal_mode(forced=true)
+#
+# If called with +true+ argument it will get the principal_selection_mode from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: principal_priority
+# :call-seq:
+#   principal_priority(forced=true)
+#
+# If called with +true+ argument it will get the principal_switch_selection_priority from the switch instead of cache
+#
+# Returns value in (string) format
 
 end
