@@ -509,9 +509,9 @@ module SAN
       if @configuration[:vf]=="enabled" && @fid && !@configuration[:override_vf]
         cmds = cmd.split("|") 
         if cmds.size>1
-          "fosexec --fid #{@fid} \'#{cmds.shift}\' |#{cmds.join("|")}"
+          "fosexec --fid #{@fid} -cmd \'#{cmds.shift}\' |#{cmds.join("|")}"
         else
-          "fosexec --fid #{@fid} \'#{cmds.shift}\'"
+          "fosexec --fid #{@fid} -cmd \'#{cmds.shift}\'"
         end
       else
         cmd

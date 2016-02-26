@@ -40,7 +40,7 @@ class SwitchTest < MiniTest::Test
   end
   
   def test_interactive_query
-    cmds = ["fosexec --fid 99 'cfgsave'","y"]
+    cmds = ["fosexec --fid 99 -cmd 'cfgsave'","y"]
     replies = ["confirm? [y,n]"]
     exp_response = write_interactive_story(cmds,replies,TestDevice::DEFAULT_QUERY_PROMPT)
     
@@ -162,15 +162,15 @@ class SwitchTest < MiniTest::Test
     
     #vf enabled and fid given
     @device.set_context 99
-    assert_equal "fosexec --fid 99 \'test\'", @device.send(:fullcmd,"test")
+    assert_equal "fosexec --fid 99 -cmd \'test\'", @device.send(:fullcmd,"test")
     
     #vf enabled and fid given and piped commnad
     @device.set_context 99
-    assert_equal "fosexec --fid 99 \'test\' |grep shit", @device.send(:fullcmd,"test|grep shit")
+    assert_equal "fosexec --fid 99 -cmd \'test\' |grep shit", @device.send(:fullcmd,"test|grep shit")
     
     #vf enabled and fid given and piped commnad
     @device.set_context 99
-    assert_equal "fosexec --fid 99 \'test\' | grep shit| grep shit2", @device.send(:fullcmd,"test| grep shit| grep shit2")
+    assert_equal "fosexec --fid 99 -cmd \'test\' | grep shit| grep shit2", @device.send(:fullcmd,"test| grep shit| grep shit2")
     
     #vf enabled and fid given and override
     @device.set_context 99
