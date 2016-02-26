@@ -578,7 +578,7 @@ module SAN
         # we detect which command output we parse - commands start with defined prompt on the XML line
         @parsed[:parsing_position] = case
           # stripping fosexec, all pipes and ' to get pure command 
-          when line.match(/^#{@prompt}/) then line.gsub(/(fosexec --fid \d+ \')|\'$|\' \|.*$/,"").split(" ")[1]
+          when line.match(/^#{@prompt}/) then line.gsub(/(fosexec --fid \d+ -cmd \')|\'$|\' \|.*$/,"").split(" ")[1]
           else @parsed[:parsing_position]
         end
         #some default processing

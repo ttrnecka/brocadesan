@@ -1,0 +1,3 @@
+> fabricprincipal
+Principal Selection Mode: Disable
+Principal Switch Selection Priority: 0
