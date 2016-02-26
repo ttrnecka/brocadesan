@@ -1,0 +1,7 @@
+:current_switch_policy_status:    HEALTHY
+:maps_summary: |
+ Category                 |Today                     |Last 7 days               
+ --------------------------------------------------------------------------------
+ Fru Health               |No Errors                 |No Errors                 
+ Switch Resource          |No Errors                 |No Errors                 
+:parsing_position: end

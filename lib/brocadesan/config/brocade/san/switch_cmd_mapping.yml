@@ -94,9 +94,17 @@
     :cmd: "switchstatusshow"
     :attr: switchstatusshow
     :format: string
+:maps_status:
+    :cmd: "mapsdb --show"
+    :attr: current_switch_policy_status
+    :format: string
+:maps_status_details:
+    :cmd: "mapsdb --show"
+    :attr: maps_summary
+    :format: string
 :ip:
-    :cmd: "switchstatusshow"
-    :attr: ip_address
+    :cmd: "ipaddrshow"
+    :attr: ethernet_ip_address
     :format: string
 :supportshow:
     :cmd: "supportshow"

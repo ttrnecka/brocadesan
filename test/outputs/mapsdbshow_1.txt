@@ -1,0 +1,32 @@
+> mapsdb --show
+
+1 Dashboard Information:
+=======================
+
+DB start time:                  Mon Jan 25 11:00:04 2016
+Active policy:                  dflt_base_policy
+Configured Notifications:       None
+Quarantined Ports :             None
+
+2 Switch Health Report:
+=======================
+
+Current Switch Policy Status: HEALTHY
+
+
+3.1 Summary Report:
+===================
+
+Category                 |Today                     |Last 7 days               
+--------------------------------------------------------------------------------
+Fru Health               |No Errors                 |No Errors                 
+Switch Resource          |No Errors                 |No Errors                 
+
+
+3.2 Rules Affecting Health:
+===========================
+
+Category(Rule Count)|RepeatCount|Rule Name                  |Execution Time   |Object           |Triggered Value(Units)|
+------------------------------------------------------------------------------------------------------------------------
+
+MAPS is not Licensed. MAPS extended features are available ONLY with License

@@ -7,6 +7,7 @@
 :dlsshow: oneline
 :iodshow: oneline
 :switchstatusshow: multiline
+:mapsdb: multiline
 :supportshow: multiline
 :cfgshow: cfgshow
 :nsshow: ns
@@ -20,3 +21,4 @@
 :zoneshow: cfgshow
 :alishow: cfgshow
 :fabricprincipal: multiline
+:ipaddrshow: ipaddrshow

@@ -1,0 +1,7 @@
+> ipaddrshow
+
+SWITCH
+Ethernet IP Address: 10.200.1.112
+Ethernet Subnetmask: 255.255.0.0
+Gateway IP Address: 10.200.0.1
+DHCP: Off

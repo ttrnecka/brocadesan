@@ -1,0 +1,21 @@
+> ipaddrshow
+
+CHASSIS
+Ethernet IP Address: 10.200.0.153
+Ethernet Subnetmask: 255.255.0.0
+
+CP0
+Ethernet IP Address: 10.200.0.151
+Ethernet Subnetmask: 255.255.0.0
+Host Name: PLNPOD2N2ECS001-mgmt06
+Gateway IP Address: 10.200.0.1
+
+CP1
+Ethernet IP Address: 10.200.0.152
+Ethernet Subnetmask: 255.255.0.0
+Host Name: PLNPOD2N2ECS001-mgmt07
+Gateway IP Address: 10.200.0.1
+IPv6 Autoconfiguration Enabled: Yes
+Local IPv6 Addresses:
+IPv6 Gateways:
+DHCPv6: Off

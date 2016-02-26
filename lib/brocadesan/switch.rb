@@ -615,6 +615,8 @@ module SAN
             parse_ns(line)
           when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='trunk' ? k : nil }.compact.join("|")}/i)
             parse_trunk(line)
+          when @parsed[:parsing_position].match(/#{PARSER_MAPPING.map{ |k,v| v=='ipaddrshow' ? k : nil }.compact.join("|")}/i)
+            parse_ipaddrshow(line)
         end
       end
       
@@ -625,24 +627,48 @@ module SAN
       
       # parser used to parse commands with multi lines output
       def parse_multiline(line)
-        # switchstatusshow
-        case
-        when line.match(/^\s*[a-z]+.*:/i)
-          arr = line.split(":")
-          @parsed[arr[0].strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym]=arr[1..-1].join(":").strip
-        when line.match(/^There is no outstanding/) && @parsed[:parsing_position]=="cfgtransshow"
-          @parsed[:cfg_transaction] = {:id=>-1, :abortable=>nil, :msg => "no transaction"}
-        when line.match(/^Current transaction token is (.+)$/) && @parsed[:parsing_position]=="cfgtransshow"
-          @parsed[:cfg_transaction][:id] = $1
-        when line.match(/It is(.+)abortable$/) && @parsed[:parsing_position]=="cfgtransshow"
-          @parsed[:cfg_transaction][:abortable] = $1.match(/not/) ? false : true
+        case @parsed[:parsing_position]
+        when "mapsdb"
+          case
+          when line.match(/^Current Switch Policy Status/)
+            arr = line.split(":")
+            @parsed[arr[0].strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym]=arr[1..-1].join(":").strip
+          when line.match(/Summary Report/)
+            @in_maps_summary = true
+          when line.match(/Rules Affecting Health/)
+            @in_maps_summary = false
+            #@parsed[:maps_summary].gsub!(/\n$/,"")
+          when @in_maps_summary == true
+            return nil if line.match(/^=/)
+            @parsed[:maps_summary]||=""
+            @parsed[:maps_summary]+=line+"\n"
+          end
         else
-          #supportshow
-          @parsed[@parsed[:parsing_position].to_sym]||=""
-          @parsed[@parsed[:parsing_position].to_sym]+=line+"\n"
+          # switchstatusshow
+          case
+          when line.match(/^\s*[a-z]+.*:/i)
+            arr = line.split(":")
+            @parsed[arr[0].strip.gsub(/\s+/,"_").gsub(/([a-z])([A-Z])/,'\1_\2').downcase.to_sym]=arr[1..-1].join(":").strip
+          when line.match(/^There is no outstanding/) && @parsed[:parsing_position]=="cfgtransshow"
+            @parsed[:cfg_transaction] = {:id=>-1, :abortable=>nil, :msg => "no transaction"}
+          when line.match(/^Current transaction token is (.+)$/) && @parsed[:parsing_position]=="cfgtransshow"
+            @parsed[:cfg_transaction][:id] = $1
+          when line.match(/It is(.+)abortable$/) && @parsed[:parsing_position]=="cfgtransshow"
+            @parsed[:cfg_transaction][:abortable] = $1.match(/not/) ? false : true
+          else
+            #supportshow
+            @parsed[@parsed[:parsing_position].to_sym]||=""
+            @parsed[@parsed[:parsing_position].to_sym]+=line+"\n"
+          end
         end
       end
       
+      #parser for ipaddrshow
+      def parse_ipaddrshow(line)
+          if @parsed[:ethernet_ip_address].nil? && line.match(/Ethernet IP Address/)
+            @parsed[:ethernet_ip_address] = line.split(":")[1].strip
+          end
+      end
       # parser for multiline output where each line is independent
       def parse_simple(line)
         case
