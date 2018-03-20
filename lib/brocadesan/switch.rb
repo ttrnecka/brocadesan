@@ -412,16 +412,18 @@ module SAN
           
           
         # storing defined
-        @configuration[:defined_configuration][:cfg].each do |config,members|
-   
-          effective =  @configuration[:effective_configuration][:cfg].keys[0]==config ? true : false
-          
-          cfg=ZoneConfiguration.new(config,:effective=>effective)
-          members.each do |member|
-            cfg.add_member member
+        if !@configuration[:defined_configuration][:cfg].nil?
+          @configuration[:defined_configuration][:cfg].each do |config,members|
+     
+            effective =  @configuration[:effective_configuration][:cfg].keys[0]==config ? true : false
+            
+            cfg=ZoneConfiguration.new(config,:effective=>effective)
+            members.each do |member|
+              cfg.add_member member
+            end
+            
+            tmp_cfg[:zone_configurations]<<cfg
           end
-          
-          tmp_cfg[:zone_configurations]<<cfg
         end
         
         if full
