@@ -1,4 +1,9 @@
 > fabricshow
+
+---------------------------------------------------
+
+"fabricshow" on FID 128:
+
 Switch ID   Worldwide Name           Enet IP Addr    FC IP Addr      Name
 -------------------------------------------------------------------------
   1: fffc01 10:00:00:05:1e:4c:24:00 15.187.118.17   0.0.0.0        >"IDAA1C01"
@@ -7,4 +12,4 @@ Switch ID   Worldwide Name           Enet IP Addr    FC IP Addr      Name
 132: fffc84 10:00:00:05:33:25:12:00 15.187.119.38   0.0.0.0         "GREA1C02"
 
 The Fabric has 4 switches
-
+Fabric Name: ENV2 VPC Lab - Fab B

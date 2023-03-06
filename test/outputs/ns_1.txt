@@ -78,3 +78,8 @@ Switch entry for 129
         Device Shared in Other AD: No
         Redirect: No 
         Partial: No
+The Local Name Server has 62 entries }
+---------------------------------------------------
+
+"nsshow" on FID 128:
+

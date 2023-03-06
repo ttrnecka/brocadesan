@@ -514,3 +514,7 @@ class SwitchResponseTest < MiniTest::Test
 end
 
 end; end
+
+class TestDevice
+  include SshDevice
+end

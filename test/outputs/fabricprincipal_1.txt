@@ -1,3 +1,8 @@
 > fabricprincipal
+
+---------------------------------------------------
+
+"fabricprincipal" on FID 128:
+
 Principal Selection Mode: Enable
 Principal Switch Selection Priority: 0x1

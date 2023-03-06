@@ -1,5 +1,5 @@
 require 'rake/testtask'
-require 'rake/notes/rake_task'
+#require 'rake/notes/rake_task'
 require 'rdoc/task'
 require 'yaml'
 

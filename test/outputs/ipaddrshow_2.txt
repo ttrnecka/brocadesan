@@ -1,5 +1,9 @@
 > ipaddrshow
 
+---------------------------------------------------
+
+"ipaddrshow" on FID 128:
+
 CHASSIS
 Ethernet IP Address: 10.200.0.153
 Ethernet Subnetmask: 255.255.0.0

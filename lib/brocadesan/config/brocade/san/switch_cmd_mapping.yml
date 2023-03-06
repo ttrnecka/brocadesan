@@ -81,7 +81,7 @@
 :dls:
     :cmd: "dlsshow"
     :attr: dlsshow
-    :format: string
+    :format: array
 :iod:
     :cmd: "iodshow"
     :attr: iodshow

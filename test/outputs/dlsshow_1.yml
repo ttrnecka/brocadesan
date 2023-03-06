@@ -1,4 +1,4 @@
-:dlsshow: 'DLS is set by default with current routing policy'
+:dlsshow: ["DLS is set with Lossless enabled, Two-hop Lossless disabled", "E_Port Balance Priority is not set"]
 :parsing_position: end
 
 

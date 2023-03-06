@@ -4,7 +4,7 @@
 :lscfg: simple
 :aptpolicy: simple
 :chassisname: oneline
-:dlsshow: oneline
+:dlsshow: simple
 :iodshow: oneline
 :switchstatusshow: multiline
 :mapsdb: multiline

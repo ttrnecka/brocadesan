@@ -577,7 +577,7 @@ module SAN
       
       def parse_line(line)
         return if line.empty?
-        # we detect which command output we parse - commands start with defined prompt on the XML line
+        # we detect which command output we parse - commands start with defined prompt on the CMD line
         @parsed[:parsing_position] = case
           # stripping fosexec, all pipes and ' to get pure command 
           when line.match(/^#{@prompt}/) then line.gsub(/(fosexec --fid \d+ -cmd \')|\'$|\' \|.*$/,"").split(" ")[1]
@@ -624,6 +624,9 @@ module SAN
       
       # parser used to parse commands with 1 line output
       def parse_oneline(line)
+        # do not process comment lines put there by fosexec
+        return if line.match(/"#{@parsed[:parsing_position]}"/)
+        return if line.match(/^-+$/)
         @parsed[@parsed[:parsing_position].to_sym]=line
       end
       
@@ -657,6 +660,8 @@ module SAN
             @parsed[:cfg_transaction][:id] = $1
           when line.match(/It is(.+)abortable$/) && @parsed[:parsing_position]=="cfgtransshow"
             @parsed[:cfg_transaction][:abortable] = $1.match(/not/) ? false : true
+          # FOS 9 fosexec is adding some more output lines
+          when line.match("-----") || line.match(@parsed[:parsing_position])
           else
             #supportshow
             @parsed[@parsed[:parsing_position].to_sym]||=""
@@ -739,6 +744,9 @@ module SAN
                                     :qos => l[8..-1].include?("QOS"),
                                     :cr_recov => l[8..-1].include?("CR_RECOV")
                                     }
+          when line.match("DLS is") || line.match("E_Port Balance")
+            @parsed[@parsed[:parsing_position].to_sym]||=[]
+            @parsed[@parsed[:parsing_position].to_sym]<<line
           #default handling if it doesno match specialized match
           # parse lines formated like 
           # param: value
@@ -873,6 +881,7 @@ module SAN
       # trunk parser
       def parse_trunk(line)
         return if line.match(/No trunking/i)
+        return if !line.match(/->/)
         @parsed[:trunk_links]||=[]
         l_tricky, l_simple = line.split("->")
         l_t = l_tricky.split(":")

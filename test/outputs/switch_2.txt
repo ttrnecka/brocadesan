@@ -1,4 +1,9 @@
 > switchshow
+
+---------------------------------------------------
+
+"switchshow" on FID 128:
+
 switchName:     H4C11R218-U02-ICB04
 switchType:     72.3
 switchState:    Online

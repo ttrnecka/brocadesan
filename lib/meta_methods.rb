@@ -216,11 +216,29 @@ class Brocade::SAN::Switch
 # Returns value in (string) format
 
 ##
+# :method: maps_status
+# :call-seq:
+#   maps_status(forced=true)
+#
+# If called with +true+ argument it will get the current_switch_policy_status from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
+# :method: maps_status_details
+# :call-seq:
+#   maps_status_details(forced=true)
+#
+# If called with +true+ argument it will get the maps_summary from the switch instead of cache
+#
+# Returns value in (string) format
+
+##
 # :method: ip
 # :call-seq:
 #   ip(forced=true)
 #
-# If called with +true+ argument it will get the ip_address from the switch instead of cache
+# If called with +true+ argument it will get the ethernet_ip_address from the switch instead of cache
 #
 # Returns value in (string) format
 

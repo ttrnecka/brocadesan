@@ -1,4 +1,9 @@
 > switchshow
+
+---------------------------------------------------
+
+"switchshow" on FID 128:
+
 switchName:     H4C13R253-U02-ICB03
 switchType:     72.3
 switchState:    Online

@@ -1,4 +1,9 @@
 > fosexec --fid 99 -cmd 'switchshow'
+
+---------------------------------------------------
+
+"switchshow" on FID 128:
+
 switchName:     IDAA1C01
 switchType:     62.3
 switchState:    Online

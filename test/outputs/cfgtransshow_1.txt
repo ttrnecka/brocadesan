@@ -1,2 +1,6 @@
 > cfgtransshow
+---------------------------------------------------
+
+"cfgtransshow" on FID 128:
+
 There is no outstanding zoning transaction

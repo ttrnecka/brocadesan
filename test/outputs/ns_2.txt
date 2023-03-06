@@ -35,3 +35,8 @@
 > nscamshow -t
 nscam show for remote switches:
 No entry is found!
+
+---------------------------------------------------
+
+"nscamshow" on FID 128:
+
