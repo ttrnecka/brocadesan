@@ -1,0 +1,28 @@
+> cfgshow
+Defined configuration:
+ cfg:   ECS_SAN_A
+				OneviewZone_agapiphys27bm415838ea__null_VPC_N2__S_Auto_PLNDDCPRI;
+				zone1
+ zone:  OneviewZone_agapiphys27bm415838ea__null_VPC_N2__S_Auto_PLNDDCPRI
+	
+				OneviewAlias_agapiphys27bm415838eaf4cab6ec0f__null_VPC_N2__SAN_F;
+				PLNDDCPRIM1_gv1_n1s3p3; T_PLNDDCPRIM1_2_3_3;
+				PLNDDCPRIM1_gv1_n0s3p3; T_PLNDDCPRIM1_3_3_3
+ zone:  zone1	alias1; 
+		alias2 
+ alias: OneviewAlias_agapiphys27bm415838eaf4cab6ec0f__null_VPC_N2__SAN_F
+				51:40:2e:c0:14:83:21:20
+ alias: PLNDDCPRIM1_gv1_n0s3p3
+				20:33:00:02:ac:02:88:b9
+ alias: PLNDDCPRIM1_gv1_n1s3p3
+				21:33:00:02:ac:02:88:b9
+ alias: T_PLNDDCPRIM1_2_3_3 
+				22:33:00:02:ac:02:88:b9
+ alias: T_PLNDDCPRIM1_3_3_3 
+				23:33:00:02:ac:02:88:b9
+
+Effective configuration:
+ cfg:   ECS_SAN_A
+ zone:	zone1	
+		50:01:43:80:03:BC:68:00
+		50:01:43:80:12:0E:2B:60

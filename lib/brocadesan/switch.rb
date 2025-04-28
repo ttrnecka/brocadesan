@@ -760,6 +760,8 @@ module SAN
       
       # parser dedicated to cfgshow format
       def parse_cfgshow(line)
+        # skip line that are just spaces/tabs
+        return if line.match(/^\s*$/)
         # once effective_configuration is loaded we ignore rest
         return if @parsed[:effective_configuration] and !@parsed[:effective_configuration][:cfg].nil?
         
